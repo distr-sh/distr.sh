@@ -3,7 +3,7 @@ import {Icon} from 'astro-icon/components';
 import jeffersonImage from '~/assets/testimonials/testimonial-7.jpg';
 import anshGuptaImage from '~/assets/case-studies/sophris/ansh-gupta.jpeg';
 import chrisLoImage from '~/assets/testimonials/testimonial-5.png';
-import mathiasImage from '~/assets/testimonials/testimonial-2.png';
+import derekReynoldsImage from '~/assets/case-studies/basedash/reynolds.jpeg';
 
 const testimonials = [
   {
@@ -23,18 +23,19 @@ const testimonials = [
     caseStudyUrl: '/case-studies/sophris/',
   },
   {
+    name: 'Derek Reynolds',
+    role: 'Product Engineer',
+    company: 'Basedash',
+    image: derekReynoldsImage,
+    text: 'Having a dedicated space for all our self-hosted customers that can manage authenticated registry access is great.',
+    caseStudyUrl: '/case-studies/basedash/',
+  },
+  {
     name: 'Chris Lo',
     role: 'Co-founder',
     company: 'Tracecat (YC W24)',
     image: chrisLoImage,
     text: 'Distr made it possible to move from being self-hosted only on AWS ECS to being deployed everywhere Kubernetes runs—even in the most protected environments.',
-  },
-  {
-    name: 'Mathias Nöbauer',
-    role: 'CEO',
-    company: 'A1 Digital',
-    image: mathiasImage,
-    text: 'Distr is the perfect solution for powering private infrastructure deployments. It simplifies the process, making it easy to deploy and manage complex applications',
   },
 ];
 ---

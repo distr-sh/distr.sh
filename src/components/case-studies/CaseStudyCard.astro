@@ -12,6 +12,8 @@ export interface Props {
   result: string;
   ctoQuote: string;
   logo: ImageMetadata;
+  logoLight?: ImageMetadata;
+  logoDark?: ImageMetadata;
   ctoImage: ImageMetadata;
   ctoName: string;
   ctoTitle: string;
@@ -27,11 +29,15 @@ const {
   result,
   ctoQuote,
   logo,
+  logoLight,
+  logoDark,
   ctoImage,
   ctoName,
   ctoTitle,
   slug,
 } = Astro.props;
+
+const useThemedLogo = logoLight && logoDark;
 ---
 
 <div
@@ -43,13 +49,34 @@ const {
     <div class="lg:col-span-2 space-y-6">
       <!-- Header with Logo and Info -->
       <div class="flex flex-col md:flex-row gap-6 md:gap-12 mb-8">
-        <Image
-          src={logo}
-          alt={`${company} Logo`}
-          class="h-24 w-auto rounded-xl object-contain"
-          width={200}
-          height={96}
-        />
+        {
+          useThemedLogo ? (
+            <>
+              <Image
+                src={logoLight}
+                alt={`${company} Logo`}
+                class="h-24 w-auto rounded-xl object-contain dark:hidden"
+                width={200}
+                height={96}
+              />
+              <Image
+                src={logoDark}
+                alt={`${company} Logo`}
+                class="h-24 w-auto rounded-xl object-contain hidden dark:block"
+                width={200}
+                height={96}
+              />
+            </>
+          ) : (
+            <Image
+              src={logo}
+              alt={`${company} Logo`}
+              class="h-24 w-auto rounded-xl object-contain"
+              width={200}
+              height={96}
+            />
+          )
+        }
         <div class="flex flex-col gap-2">
           <div class="text-center md:text-left">
             <div
