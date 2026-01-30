@@ -1,7 +1,6 @@
 import type {ImageMetadata} from 'astro';
 
 // Import images
-import basedashLogoDark from '../assets/case-studies/basedash/Basedash_Dark.svg';
 import basedashLogoLight from '../assets/case-studies/basedash/Basedash_Light.svg';
 import derekReynolds from '../assets/case-studies/basedash/reynolds.jpeg';
 import lerianLogo from '../assets/case-studies/lerian-logo.png';
@@ -18,12 +17,7 @@ export interface CaseStudy {
   ctoName: string;
   ctoTitle: string;
   ctoQuote: string;
-  /** Single logo for both themes. Ignored when logoLight and logoDark are set. */
   logo: ImageMetadata;
-  /** Logo for light theme. When set with logoDark, used instead of logo. */
-  logoLight?: ImageMetadata;
-  /** Logo for dark theme. When set with logoLight, used instead of logo. */
-  logoDark?: ImageMetadata;
   ctoImage: ImageMetadata;
   challenge: string;
   solution: string;
@@ -134,8 +128,6 @@ By choosing Distr, Sophris improved their on-premises distribution experience, s
     ctoQuote:
       'Having a dedicated space for all our self-hosted customers that can manage authenticated registry access is great.',
     logo: basedashLogoLight,
-    logoLight: basedashLogoLight,
-    logoDark: basedashLogoDark,
     ctoImage: derekReynolds,
     pageTitle: 'Basedash Case Study',
     pageDescription:
