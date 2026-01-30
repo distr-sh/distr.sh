@@ -150,7 +150,7 @@ The team was looking for:
 
 <ul class="list-disc list-inside">
   <li><strong>Agent deployment (recommended):</strong> Customers install the Distr agent with a single command from the customer portal. The agent pulls images, runs Docker Compose, and reports status. Basedash gets automatic updates and health visibility without touching customer servers.</li>
-  <li><strong>Container deployment:</strong> Teams that are already have asetup for deploying self-hosted apps can pull images from the Distr registry using a PAT. They get full control over when and how to deploy.</li>
+  <li><strong>Container deployment:</strong> Teams that already have a setup for deploying self-hosted apps can pull images from the Distr registry using a PAT. They get full control over when and how to deploy.</li>
   <li><strong>One place for all self-hosted customers:</strong> Whether a customer uses the agent or pulls images themselves, every self-hosted deployment is visible and manageable from the same platform.</li>
 </ul>
 
