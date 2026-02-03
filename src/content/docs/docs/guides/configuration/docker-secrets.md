@@ -18,7 +18,7 @@ services:
     image: my-application-backend
     secrets:
       - api-key.txt
-    env:
+    environment:
       API_KEY_PATH: /run/secrets/api-key.txt
 
 secrets:

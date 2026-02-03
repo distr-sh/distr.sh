@@ -18,7 +18,7 @@ import threeJson from './docker-env-multi-service/three.json?raw';
 Distr allows users to define environment variable templates for Docker applications.
 Users can configure and customize environment variables before deploying an application.
 
-This guide builds on top the [create a Docker application](/docs/guides/application/) and explains
+This guide builds on top of the [create a Docker application](/docs/guides/application/) guide and explains
 environment variable templates in more detail.
 
 ## What is an Environment Variable Template?
@@ -72,7 +72,7 @@ docker compose --env-file .prod.env up
 ## Referencing environment variables in multiple services
 
 <Aside type="caution">
-  The Distr agent **does not** mount the `.env` file as file into your
+  The Distr agent **does not** mount the `.env` file as a file into your
   containers, but provides the variables separately, so you have fine control
   over which service is able to access which env variable.
 </Aside>
@@ -96,7 +96,7 @@ You can execute this example with the following command:
 docker compose up
 ```
 
-When running the Docker Compose file you will be able to see following output for the webservers `/env` endpoint:
+When running the Docker Compose file you will be able to see the following output for the webservers `/env` endpoint:
 
 <Tabs>
   <TabItem label="service one">
