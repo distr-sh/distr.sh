@@ -18,12 +18,12 @@ import threeJson from './docker-env-multi-service/three.json?raw';
 Distr allows users to define environment variable templates for Docker applications.
 Users can configure and customize environment variables before deploying an application.
 
-In this guide, builds on top the [create a Docker application](/docs/guides/application/) and explains the
+This guide builds on top the [create a Docker application](/docs/guides/application/) and explains
 environment variable templates in more detail.
 
 ## What is an Environment Variable Template?
 
-Environment variables are used to pass deployment specific values to your application.
+Environment variables are used to pass deployment-specific values to your application.
 With Distr, you can define a template for these variables, allowing users to customize them before deployment and ensuring all necessary values are set.
 
 This setup consists of three parts:
@@ -42,11 +42,11 @@ Here's an example of how it works:
 
 <Aside type="tip">
   Using `:?error` ensures that the template variable must be set, else it will
-  not start
+  not start.
 </Aside>
 
-The docker compose file will be the same for all deployments that use that specific version of the application.
-The environment file can be kustomize for each deployment
+The Docker Compose file will be the same for all deployments that use that specific version of the application.
+The environment file can be customized for each deployment.
 
 <Tabs>
   <TabItem label="docker-compose.yaml">
@@ -60,13 +60,19 @@ The environment file can be kustomize for each deployment
 You can execute this example with the following command:
 
 ```shell
-docker compose --env-file .env up
+docker compose up
+```
+
+You can also create different environments using the `--env-file` flag:
+
+```shell
+docker compose --env-file .prod.env up
 ```
 
 ## Referencing environment variables in multiple services
 
 <Aside type="caution">
-  As the Distr agent **does not** mount the `.env` file as file into the
+  The Distr agent **does not** mount the `.env` file as file into your
   containers, but provides the variables separately, so you have fine control
   over which service is able to access which env variable.
 </Aside>
@@ -87,10 +93,10 @@ If multiple services need the same environment variables, you can define them in
 You can execute this example with the following command:
 
 ```shell
-docker compose --env-file .env up
+docker compose up
 ```
 
-When running the docker compose file you will be able to see following output for the webservers `/env` endpoint:
+When running the Docker Compose file you will be able to see following output for the webservers `/env` endpoint:
 
 <Tabs>
   <TabItem label="service one">
