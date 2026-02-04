@@ -4,11 +4,13 @@ x-shared-env: &shared-env
 
 services:
   backend:
+    image: backend-aio
     entrypoint: ['/app/app']
     environment:
       <<: *shared-env
 
   jobs:
+    image: backend-aio
     entrypoint: ['busybox', 'crond', '-f', '-L', '/dev/stdout']
     environment:
       <<: *shared-env
