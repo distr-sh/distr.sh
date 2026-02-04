@@ -18,158 +18,111 @@ tags:
   - DevOps
 ---
 
-import {Code, TabItem, Tabs} from '@astrojs/starlight/components';
+import {Aside, Code, TabItem, Tabs} from '@astrojs/starlight/components';
 import approach1Arch from '~/assets/blog/2026-02-03-docker-compose-cron-jobs/approach-1-architecture.svg';
 import approach2Arch from '~/assets/blog/2026-02-03-docker-compose-cron-jobs/approach-2-architecture.svg';
 import approach3Arch from '~/assets/blog/2026-02-03-docker-compose-cron-jobs/approach-3-architecture.svg';
 import approach1Dockerfile from './2026-02-03-docker-compose-cron-jobs/approach-1/Dockerfile?raw';
 import approach1Crontab from './2026-02-03-docker-compose-cron-jobs/approach-1/crontab?raw';
-import approach1Compose from './2026-02-03-docker-compose-cron-jobs/approach-1/docker-compose.yaml?raw';
 import approach2Compose from './2026-02-03-docker-compose-cron-jobs/approach-2/docker-compose.yaml?raw';
 import approach3Compose from './2026-02-03-docker-compose-cron-jobs/approach-3/docker-compose.yaml?raw';
 
 I am Philip—an engineer working at Distr, which helps software and AI companies distribute their applications to self-managed environments.
-We build an Open Source Software Distribution platform called Distr ([`github.com/distr-sh/distr`](https://github.com/distr-sh/distr)).
-
-&nbsp;
+Our Open Source Software Distribution platform is available on GitHub ([`github.com/distr-sh/distr`](https://github.com/distr-sh/distr)).
 
 [Docker Compose](https://docs.docker.com/compose/) is a great orchestration for easily deploying multi-container applications.
 But Docker Compose doesn't natively support scheduled jobs.
 Although it sounds like a complicated problem at first, solutions are actually quite simple.
 
-&nbsp;
-
 <hr />
 
 ## Cron Job Support in Docker Compose
 
-&nbsp;
-
 Traditionally servers used to run for a long time (usually even way too long).
 The unix [cron](https://en.wikipedia.org/wiki/Cron) utility was invented in the early days of Unix to schedule tasks at a specific time at the host system.
 
-&nbsp;
-
 Its configuration file _crontab_ (short for "cron table") syntax is still widely adopted and used today.
 In a containerized environment a container often represents a short-lived process, which usually doesn't spawn other processes, to simplify container monitoring.
-
-&nbsp;
 
 Also all utils are not present in all containers as containers try to be as lightweight as possible.
 
 I've encountered this challenge repeatedly while working on Distr deployments across different customer environments.
 After testing various approaches in production, three patterns emerged as practical solutions, each with different trade-offs.
 
-## Approach 1: Lightweight Crontab Container
-
-&nbsp;
+## Approach 1: Lightweight Cron Scheduling Container
 
 The simplest approach uses a minimal Alpine Linux container running BusyBox's crond.
 This container initiates actions in other services via HTTP calls or executes local scripts.
 
-### Implementation
+### Cron Schedluer Docker Implementation
 
-&nbsp;
-
-Here's how we implemented this in our hello-distr example application:
+This is the simplest minimal implementation of to use a cron scheduler in Alpine Linux:
 
 <Tabs>
-  <TabItem label="jobs/Dockerfile">
-    <Code
-      code={approach1Dockerfile}
-      lang="dockerfile"
-      title="jobs/Dockerfile"
-    />
+  <TabItem label="Dockerfile">
+    <Code code={approach1Dockerfile} lang="dockerfile" />
   </TabItem>
-  <TabItem label="jobs/crontab">
-    <Code code={approach1Crontab} lang="txt" title="jobs/crontab" />
-  </TabItem>
-  <TabItem label="docker-compose.yaml">
-    <Code
-      code={approach1Compose}
-      lang="yaml"
-      title="deploy/docker-compose.yaml (relevant section)"
-    />
+  <TabItem label="crontab">
+    <Code code={approach1Crontab} lang="txt" />
   </TabItem>
 </Tabs>
 
-### Architecture
+A full example including a Docker Compose file with networking and backend services can be found in our example application [`hello-distr`](https://github.com/distr-sh/hello-distr).
 
-![Approach 1 Architecture](~/assets/blog/2026-02-03-docker-compose-cron-jobs/approach-1-architecture.svg)
+- Jobs service with its [`Dockerfile`](https://github.com/distr-sh/hello-distr/blob/main/jobs/Dockerfile) and [`crontab`](https://github.com/distr-sh/hello-distr/blob/main/jobs/crontab) configuration
+- Full [`docker-compose.yml`](https://github.com/distr-sh/hello-distr/blob/main/deploy/docker-compose.yaml) file including the jobs service
 
-### Advantages
+### Cron Scheduler in Docker Architecture
 
-- **Minimal resource footprint**: Alpine Linux image is typically under 10MB
-- **Simple to understand**: Standard crontab syntax that any engineer can read
-- **Easy to debug**: Logs go directly to stdout with `-L /dev/stdout`
-- **Network isolation**: Runs within the Docker Compose network, accessing services by name
-- **No security concerns**: No Docker socket mounting required
+<img src={approach1Arch.src} alt="Lightweight docker scheduler" />
 
-### Disadvantages
+The jobs service only initiates scheduled jobs by calling an endpoint on the backend service that will trigger the job actions.
 
-- **Limited functionality**: Best suited for HTTP-triggered jobs
-- **No job visibility**: Failed executions might go unnoticed without monitoring
-- **Container restarts reset state**: No persistence of execution history
-- **Basic scheduling only**: No support for complex job dependencies
+### Seperate Cron Scheduler Trigger in Docker Architecture Conclusion
 
-### When to Use This
+This is the most lightweight approach and I personally like it the most, because all the logic is contained within the backend service.
+If your service runs multiple replicas, the job will also only be executed once.
+Also memory usage will be stable, as no additional containers are spawned.
 
-This approach works well when:
-
-- Your backend exposes job endpoints that handle the actual work
-- You need lightweight, predictable scheduled triggers
-- Your deployment model doesn't allow Docker socket access
-- You want the simplest possible solution
-
-We use this pattern extensively in customer deployments where the backend already implements job logic, and the cron container simply provides the scheduling mechanism.
-
-## Approach 2: Extended Backend Container with Different Entrypoint
+## Approach 2: Integrate Cron Jobs into your Backend Container
 
 The second approach reuses your existing backend image but overrides the entrypoint to run cron instead of your application server.
 This eliminates the need for a separate image while giving you access to your application's full codebase and dependencies.
 
 ### Implementation
 
+This implementation creates an "all-in-one" container that runs both the backend application and the cron scheduler.
+
+<Aside type="caution">
+  Per default the processes spawned via cron won't have access to the environment variables of the container.
+  You can pass them at the beginning of the cron file, or load them directly before executing the cron job.
+</Aside>
+
 <Tabs>
   <TabItem label="docker-compose.yaml">
-    <Code code={approach2Compose} lang="yaml" title="docker-compose.yaml" />
+    <Code code={approach2Compose} lang="yaml" />
   </TabItem>
 </Tabs>
 
+
 ### Architecture
 
-![Approach 2 Architecture](~/assets/blog/2026-02-03-docker-compose-cron-jobs/approach-2-architecture.svg)
+<img src={approach2Arch.src} alt="Approach 2 Architecture" />
 
-### Advantages
+When using this approach it is ususally recommended to still use multiple services with different entry points and not create a single service that starts the applicaiton and cron scheduler.
 
-- **Code reuse**: Access to all application code, models, and dependencies
-- **Shared environment**: Same environment variables and configuration
-- **Type safety**: Can use application's business logic directly
-- **Single image**: No need to maintain a separate jobs image
-- **Direct database access**: Jobs run with full ORM/database client support
+### Integrate Cron Jobs into your Backend Container
 
-### Disadvantages
+If you applications jobs are designed in a way that they are separate executables, or you have a CLI that has different targets,
+this is the best approach without doing too much refactoring work inside your application.
 
-- **Larger container**: Backend images are typically much larger than Alpine
-- **Resource overhead**: Running a full application environment just for cron
-- **Complexity**: Need to understand both entrypoint and command override behavior
-- **Dockerfile dependency**: Requires crond or cron to be installed in backend image
+One of the disadvanatages is that if your application requires a lot of resources, this resource usage is doubled.
+This can be espacially disadvantageous for Java based applications that require a lot of memory to start up.
 
-### When to Use This
+## Approach 3: Dedicated Job Launcher
 
-This approach makes sense when:
-
-- Your jobs need direct access to application code and models
-- You already have cron installed in your backend image
-- You want to keep job logic close to application logic
-- The additional resource usage is acceptable
-
-This pattern works particularly well for applications where scheduled jobs are tightly coupled to the business logic and benefit from shared code.
-
-## Approach 3: Dedicated Job Launcher (Ofelia)
-
-The third approach uses a specialized tool like [Ofelia](https://github.com/mcuadros/ofelia) that can spawn new containers for each job execution.
-This resembles cloud-native job runners but requires Docker socket access.
+The third approach is to use job tool launcher tools like [Ofelia](https://github.com/mcuadros/ofelia) that can spawn new containers for each job execution.
+It requires Docker socket access to spawn new containers.
 
 ### Implementation
 
@@ -181,92 +134,30 @@ This resembles cloud-native job runners but requires Docker socket access.
 
 ### Architecture
 
-![Approach 3 Architecture](~/assets/blog/2026-02-03-docker-compose-cron-jobs/approach-3-architecture.svg)
+<img src={approach3Arch.src} alt="Approach 3 Architecture" />
 
-### Advantages
+### Dedicated Job Launcher for Docker Compose Conclusion
 
-- **Container-per-job**: Each job runs in isolation with clean state
-- **Job visibility**: Better observability of individual job executions
-- **Resource isolation**: Failed jobs don't affect other services
-- **Flexible scheduling**: Supports complex schedules and job dependencies
-- **Similar to cloud patterns**: Resembles Cloud Run, AWS Fargate job patterns
+As this approach is the most intrusive one as it requires full access to the docker socket (so the scheduler can spawn not only new containers, but also see and modify any other running container on that host system).
 
-### Disadvantages
+But it is also the most flexible, especially if you have a lot of jobs that require a different tech stack and therefore different base images or these jobs require a lot of isolation, this approach is a valid choice.
 
-- **Security implications**: Requires mounting Docker socket (`/var/run/docker.sock`)
-- **Additional complexity**: Another tool to learn and maintain
-- **Not resource-efficient on single-host**: Spawning containers doesn't provide additional resources
-- **Debugging complexity**: Container lifecycle adds indirection
-- **Network configuration**: Need to explicitly configure job container networking
+Although the architecture comes the closest to cloud-native scheduling, all the spawned containers are still running on the same host system and therefore share the existing resources. (Cloud run jobs usually run on new VMs, or Kubernetes jobs ensure resource via resource requirements)
 
-### When to Use This
-
-This approach is justified when:
-
-- You need strong isolation between job executions
-- You want detailed logging and monitoring per job
-- Your deployment architecture already mounts Docker sockets
-- You're running on orchestration platforms (Kubernetes, Nomad) where this pattern fits better
-
-**Important consideration**: On a single-host VM deployment, spawning new containers doesn't provide additional resources. The CPU and memory are still shared with all running containers. This approach makes more sense in orchestrated environments where the scheduler can place job containers on different nodes.
+So it is only feasible if you have quite an oversized host system or lightweight jobs, so your backend can't be killed due to resource exhaustion.
 
 ## Comparison Matrix
 
-| Feature          | Lightweight Crontab | Extended Backend      | Ofelia Launcher       |
-| ---------------- | ------------------- | --------------------- | --------------------- |
-| Image Size       | ~10MB               | Backend size          | ~15MB + Backend       |
-| Resource Usage   | Minimal             | Medium                | High                  |
-| Job Isolation    | None                | None                  | Full                  |
-| Code Access      | None                | Full                  | Full                  |
-| Setup Complexity | Low                 | Medium                | High                  |
-| Docker Socket    | Not required        | Not required          | Required              |
-| Best For         | HTTP triggers       | Direct DB/code access | Complex job workflows |
+| Feature               | Lightweight Cron Job Trigger | Embedded Cron Job Scheduler | Distinct Cron Job Launcher |
+| --------------------- | ---------------------------- | --------------------------- | -------------------------- |
+| Resource Requirements | Minimal                      | Medium                      | High                       |
+| Job Isolation         | None                         | None                        | Full                       |
+| Setup Complexity      | Low                          | Medium                      | High                       |
+| Docker Socket         | Not required                 | Not required                | Required                   |
+| Best For              | HTTP triggers                | Direct DB/code access       | Complex job workflows      |
 
-## Recommendations
 
-Based on deployment patterns we've observed with Distr:
-
-**Start with Approach 1** (Lightweight Crontab) if:
-
-- You're distributing to customer environments with limited resources
-- Your backend already exposes job endpoints
-- You want the simplest possible solution
-- Security policies restrict Docker socket access
-
-**Use Approach 2** (Extended Backend) when:
-
-- Jobs need direct access to application models and business logic
-- You already have cron available in your backend image
-- Resource usage isn't a primary concern
-- You want to keep job code close to application code
-
-**Only use Approach 3** (Ofelia) if:
-
-- You have very specific requirements for job isolation
-- You're already in an orchestrated environment (Kubernetes, Nomad)
-- You need advanced scheduling features
-- Security policies allow Docker socket mounting
-
-## Implementation in Distr
-
-For our hello-distr example application, we chose Approach 1 because:
-
-- Most deployments target single-host customer VMs with limited resources
-- The backend already implements job logic behind API endpoints
-- Customers often have strict security policies preventing Docker socket access
-- The pattern is easy to understand and troubleshoot across different customer environments
-
-You can see the full implementation in the [hello-distr PR #584](https://github.com/distr-sh/hello-distr/pull/584).
 
 ## Conclusion
 
-There's no universally "best" approach for handling cron jobs in Docker Compose. The right choice depends on your specific constraints:
-
-- Resource availability
-- Security requirements
-- Job complexity
-- Deployment environment
-
-For most self-managed software distribution scenarios, the lightweight crontab container provides the best balance of simplicity, resource efficiency, and maintainability. It's the pattern I recommend by default, moving to more complex solutions only when requirements clearly justify the additional overhead.
-
-If you're building software for self-managed deployment, consider how your scheduling approach fits with your customer's infrastructure constraints. The simplest solution that meets your requirements is usually the right one.
+Altough I would like to see docker a jobs extension (similar to Secrets)
