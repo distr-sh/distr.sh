@@ -135,11 +135,11 @@ Both services use the same all-in-one image (backend-aio) but with different ent
 
 ### Integrated Cron Jobs into Backend Container Conclusion
 
-If your application's jobs are designed as separate executables, or you have a CLI with different targets,
+If your application's jobs are designed as separate executables, or you have a CLI with different subcommands,
 this is the best approach without requiring extensive refactoring inside your application.
 
 One of the disadvantages is that if your application requires significant resources, this resource usage is doubled.
-This can be especially disadvantageous for Java-based applications that require substantial memory to start up.
+This can be especially disadvantageous for JVM-based applications that require substantial memory to start up.
 
 Shared environment variables are also a great way to avoid declaring them multiple times across services.
 
@@ -148,7 +148,7 @@ Shared environment variables are also a great way to avoid declaring them multip
 ## Approach 3: Dedicated Job Launcher
 
 The third approach uses dedicated job launcher tools like [Ofelia](https://github.com/mcuadros/ofelia) that can spawn new containers for each job execution.
-This approach requires Docker socket access to spawn new containers.
+This approach requires that you give the job launcher access to the Docker socket in order to spawn new containers.
 
 ### Dedicated Job Launcher Docker Implementation
 
@@ -173,7 +173,7 @@ This approach is the most intrusive as it requires full access to the Docker soc
 
 However, it's also the most flexible, especially if you have many jobs requiring different tech stacks and base images, or if jobs require strong isolation from each other.
 
-Although the architecture comes closest to cloud-native scheduling, all spawned containers still run on the same host system and share existing resources. (Cloud Run jobs typically run on new VMs, while Kubernetes jobs ensure resources via resource requirements.)
+Although the architecture comes closest to cloud-native scheduling, all spawned containers still run on the same host system and share existing resources. In contrast, Cloud Run jobs typically run on new VMs, while Kubernetes jobs ensure resources via resource requirements.
 
 This approach is only feasible if you have an oversized host system or lightweight jobs, preventing your backend from being killed due to resource exhaustion.
 
