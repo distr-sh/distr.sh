@@ -17,6 +17,26 @@ const {Content} = await render(entry);
 const {title, description} = entry.data as GlossaryEntryConfig;
 ---
 
+<style>
+  .prose {
+    p {
+      @apply hyphens-auto text-justify;
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+    }
+    pre {
+      margin-top: 2rem;
+    }
+    ul,
+    ol {
+      margin-top: 2rem;
+    }
+    table {
+      margin-top: 2rem;
+    }
+  }
+</style>
+
 <Layout title={title} description={description}>
   <div
     class="relative overflow-hidden bg-gray-50 dark:bg-slate-900 py-12 sm:py-20">
@@ -40,7 +60,20 @@ const {title, description} = entry.data as GlossaryEntryConfig;
         </header>
 
         <div
-          class="prose prose-lg dark:prose-invert max-w-none prose-headings:font-bold prose-h2:text-2xl prose-h3:text-xl prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline prose-code:text-sm prose-pre:bg-gray-100 dark:prose-pre:bg-slate-900 prose-pre:border prose-pre:border-gray-200 dark:prose-pre:border-slate-700">
+          class="prose prose-lg dark:prose-invert max-w-none
+                 prose-headings:font-bold prose-headings:tracking-tight
+                 prose-h2:text-xl prose-h2:mt-12 prose-h2:mb-4
+                 prose-h3:text-lg prose-h3:mt-8 prose-h3:mb-3
+                 prose-h4:text-base prose-h4:mt-6 prose-h4:mb-2
+                 prose-p:leading-relaxed prose-p:mb-6
+                 prose-a:text-blue-600 dark:prose-a:text-blue-400
+                 prose-a:no-underline hover:prose-a:underline
+                 prose-code:text-sm prose-code:bg-gray-100 dark:prose-code:bg-gray-800
+                 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
+                 prose-pre:bg-gray-100 dark:prose-pre:bg-slate-900
+                 prose-pre:border prose-pre:border-gray-200 dark:prose-pre:border-slate-700
+                 prose-ul:mt-8 prose-ul:mb-6 prose-ol:mt-8 prose-ol:mb-6 prose-li:my-2
+                 prose-img:rounded-lg prose-img:my-8">
           <Content />
         </div>
 
