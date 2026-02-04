@@ -105,6 +105,7 @@ This implementation creates an "all-in-one" container that runs both the backend
   You can pass them at the beginning of the cron file or load them directly before executing the cron job.
 
 Additionally, cron job output is not visible in container logs by default. Use `>> /proc/1/fd/1 2>&1` at the end of your cron commands to redirect both stdout and stderr to the main container process (PID 1), making the output visible via `docker logs`.
+
 </Aside>
 
 &nbsp;
@@ -124,7 +125,10 @@ Additionally, cron job output is not visible in container logs by default. Use `
 ### Integrated Cron Jobs in Docker Architecture
 
 <div class="architecture-diagram">
-  <img src={approach2Arch.src} alt="Integrated cron jobs in Docker backend container" />
+  <img
+    src={approach2Arch.src}
+    alt="Integrated cron jobs in Docker backend container"
+  />
 </div>
 
 Both services use the same all-in-one image (backend-aio) but with different entrypoints. The backend service runs the application server, while the jobs service runs crond for scheduled tasks. This approach avoids maintaining separate images while keeping processes isolated in different containers.
@@ -155,7 +159,10 @@ This implementation uses Ofelia to manage cron jobs by spawning separate contain
 ### Dedicated Job Launcher Docker Architecture
 
 <div class="architecture-diagram">
-  <img src={approach3Arch.src} alt="Dedicated Docker job launcher with Ofelia spawning containers" />
+  <img
+    src={approach3Arch.src}
+    alt="Dedicated Docker job launcher with Ofelia spawning containers"
+  />
 </div>
 
 The Ofelia scheduler communicates with the Docker socket to spawn ephemeral job containers on demand. Each job runs in complete isolation with its own resources and lifecycle.
