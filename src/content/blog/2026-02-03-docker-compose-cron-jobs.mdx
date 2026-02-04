@@ -213,20 +213,12 @@ This approach is only feasible if you have an oversized host system or lightweig
 
 &nbsp;
 
-| Feature                | Lightweight Cron Job Trigger | Embedded Cron Job Scheduler | Distinct Cron Job Launcher |
-| ---------------------- | ---------------------------- | --------------------------- | -------------------------- |
-| Resource Requirements  | Minimal                      | Medium (2x app size)        | High (dynamic)\*           |
-| Job Isolation          | None                         | Process-level               | Full container isolation   |
-| Setup Complexity       | Low                          | Medium                      | High                       |
-| Docker Socket Access   | Not required                 | Not required                | Required (security risk)   |
-| Multi-Replica Support  | Excellent                    | Poor                        | Good                       |
-| Job Failure Handling   | App-dependent                | App-dependent               | Container exit codes       |
-| Environment Variables  | Shared via network           | Fully shared                | Explicitly configured      |
-| Image Requirements     | Separate minimal image       | Same as app                 | Any image per job          |
-| Logs Visibility        | Via app logs                 | Requires redirection        | Separate container logs    |
-| Tech Stack Flexibility | Limited to HTTP              | Same as app                 | Any per job                |
-| Suitable for JVM Apps  | Yes                          | No (high memory)            | Yes (isolated)             |
-| Best For               | HTTP triggers                | Direct DB/code access       | Complex job workflows      |
+| Feature               | Lightweight Cron Job Trigger | Embedded Cron Job Scheduler | Distinct Cron Job Launcher |
+| --------------------- | ---------------------------- | --------------------------- | -------------------------- |
+| Resource Requirements | Minimal                      | Medium (2x app size)        | High (dynamic)\*           |
+| Job Isolation         | None                         | Process-level               | Full container isolation   |
+| Docker Socket Access  | Not required                 | Not required                | Required (security risk)   |
+| Image Requirements    | Separate minimal image       | Same as app                 | Any image per job          |
 
 \* While resource requirements are high, parallel job execution is easier to achieve with isolated containers.
 
