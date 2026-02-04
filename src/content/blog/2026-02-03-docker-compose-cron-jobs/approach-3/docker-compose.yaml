@@ -1,5 +1,3 @@
-name: myapp
-
 services:
   ofelia:
     image: mcuadros/ofelia:latest

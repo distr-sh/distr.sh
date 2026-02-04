@@ -6,8 +6,5 @@
 # │ │ │ │ │
 # * * * * * command
 
-# Execute a local command (that is already in the image)
-* * * * * echo "Hello world"
-
 # Call the internal API of another container in the Docker network
 * * * * * wget -O- http://backend:5000/health

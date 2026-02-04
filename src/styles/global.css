@@ -101,4 +101,25 @@
   :root[data-theme='dark'] .prose :not(a) > code:not(pre code) {
     color: var(--color-gray-100);
   }
+
+  /* Architecture diagram styling */
+  .architecture-diagram {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 2rem 0;
+  }
+
+  .architecture-diagram img {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+
+  @media (min-width: 768px) {
+    .architecture-diagram img {
+      width: 75%;
+      max-width: 75%;
+    }
+  }
 }

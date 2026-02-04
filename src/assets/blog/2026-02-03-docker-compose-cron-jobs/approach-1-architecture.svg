@@ -1,28 +1,28 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" style="max-width: 100%; height: auto;">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 150" style="max-width: 100%; height: auto;">
   <defs>
     <style>
-      .box { fill: #2563eb; stroke: #1e40af; stroke-width: 2; rx: 8; }
-      .text { fill: white; font-family: system-ui, sans-serif; font-size: 16px; font-weight: 600; }
-      .subtitle { fill: white; font-family: system-ui, sans-serif; font-size: 13px; }
-      .arrow { stroke: #64748b; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
-      .label { fill: #475569; font-family: system-ui, sans-serif; font-size: 14px; }
+      .box { fill: #0073aa; stroke: #003653; stroke-width: 2; rx: 6; }
+      .text { fill: white; font-family: system-ui, sans-serif; font-size: 14px; font-weight: 600; }
+      .subtitle { fill: #92d1fe; font-family: system-ui, sans-serif; font-size: 11px; }
+      .arrow { stroke: #6f6f7e; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .label { fill: #424249; font-family: system-ui, sans-serif; font-size: 12px; }
     </style>
     <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-      <polygon points="0 0, 10 3, 0 6" fill="#64748b" />
+      <polygon points="0 0, 10 3, 0 6" fill="#6f6f7e" />
     </marker>
   </defs>
 
   <!-- Jobs Container -->
-  <rect class="box" x="50" y="60" width="180" height="80" />
-  <text x="140" y="95" text-anchor="middle" class="text">jobs</text>
-  <text x="140" y="115" text-anchor="middle" class="subtitle">Alpine + crond</text>
+  <rect class="box" x="40" y="45" width="150" height="60" />
+  <text x="115" y="70" text-anchor="middle" class="text">jobs</text>
+  <text x="115" y="88" text-anchor="middle" class="subtitle">Alpine + crond</text>
 
   <!-- Backend Container -->
-  <rect class="box" x="370" y="60" width="180" height="80" />
-  <text x="460" y="95" text-anchor="middle" class="text">backend</text>
-  <text x="460" y="115" text-anchor="middle" class="subtitle">Application</text>
+  <rect class="box" x="310" y="45" width="150" height="60" />
+  <text x="385" y="70" text-anchor="middle" class="text">backend</text>
+  <text x="385" y="88" text-anchor="middle" class="subtitle">Application</text>
 
   <!-- Arrow -->
-  <path class="arrow" d="M 230 100 L 365 100"/>
-  <text x="295" y="90" text-anchor="middle" class="label">HTTP</text>
+  <path class="arrow" d="M 190 75 L 305 75"/>
+  <text x="247" y="68" text-anchor="middle" class="label">HTTP</text>
 </svg>

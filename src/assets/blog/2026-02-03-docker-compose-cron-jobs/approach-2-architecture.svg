@@ -1,34 +1,34 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 280" style="max-width: 100%; height: auto;">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 200" style="max-width: 100%; height: auto;">
   <defs>
     <style>
-      .box-blue { fill: #2563eb; stroke: #1e40af; stroke-width: 2; rx: 8; }
-      .box-purple { fill: #7c3aed; stroke: #6d28d9; stroke-width: 2; rx: 8; }
-      .box-green { fill: #059669; stroke: #047857; stroke-width: 2; rx: 8; }
-      .text { fill: white; font-family: system-ui, sans-serif; font-size: 16px; font-weight: 600; }
-      .subtitle { fill: white; font-family: system-ui, sans-serif; font-size: 13px; }
-      .arrow { stroke: #64748b; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .box-blue { fill: #0073aa; stroke: #003653; stroke-width: 2; rx: 6; }
+      .box-accent { fill: #003653; stroke: #00273d; stroke-width: 2; rx: 6; }
+      .box-gray { fill: #6f6f7e; stroke: #5a5a67; stroke-width: 2; rx: 6; }
+      .text { fill: white; font-family: system-ui, sans-serif; font-size: 14px; font-weight: 600; }
+      .subtitle { fill: #92d1fe; font-family: system-ui, sans-serif; font-size: 11px; }
+      .arrow { stroke: #6f6f7e; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
     </style>
     <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-      <polygon points="0 0, 10 3, 0 6" fill="#64748b" />
+      <polygon points="0 0, 10 3, 0 6" fill="#6f6f7e" />
     </marker>
   </defs>
 
   <!-- Backend Container -->
-  <rect class="box-blue" x="50" y="40" width="200" height="70" />
-  <text x="150" y="70" text-anchor="middle" class="text">backend</text>
-  <text x="150" y="90" text-anchor="middle" class="subtitle">Application Server</text>
+  <rect class="box-blue" x="40" y="30" width="160" height="55" />
+  <text x="120" y="53" text-anchor="middle" class="text">backend</text>
+  <text x="120" y="70" text-anchor="middle" class="subtitle">Application Server</text>
 
   <!-- Backend Jobs Container -->
-  <rect class="box-purple" x="50" y="140" width="200" height="70" />
-  <text x="150" y="170" text-anchor="middle" class="text">backend-jobs</text>
-  <text x="150" y="190" text-anchor="middle" class="subtitle">Cron Jobs</text>
+  <rect class="box-accent" x="40" y="115" width="160" height="55" />
+  <text x="120" y="138" text-anchor="middle" class="text">backend-jobs</text>
+  <text x="120" y="155" text-anchor="middle" class="subtitle">Cron Jobs</text>
 
   <!-- Postgres Container -->
-  <rect class="box-green" x="350" y="90" width="200" height="70" />
-  <text x="450" y="120" text-anchor="middle" class="text">postgres</text>
-  <text x="450" y="140" text-anchor="middle" class="subtitle">Database</text>
+  <rect class="box-gray" x="300" y="70" width="160" height="55" />
+  <text x="380" y="93" text-anchor="middle" class="text">postgres</text>
+  <text x="380" y="110" text-anchor="middle" class="subtitle">Database</text>
 
   <!-- Arrows -->
-  <path class="arrow" d="M 250 75 L 345 115"/>
-  <path class="arrow" d="M 250 175 L 345 135"/>
+  <path class="arrow" d="M 200 57 L 295 90"/>
+  <path class="arrow" d="M 200 143 L 295 105"/>
 </svg>

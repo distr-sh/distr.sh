@@ -1,34 +1,14 @@
-name: myapp
+x-shared-env: &shared-env
+  ENVIRONMENT: production
+  DATABASE_URL: postgresql://user:password@postgres:5432/myapp
 
 services:
   backend:
-    image: myapp/backend:latest
-    command: ['python', 'app.py']
+    entrypoint: ['/app/app']
     environment:
-      DB_URL: postgresql://user:pass@postgres/db
-    networks:
-      - app_network
+      <<: *shared-env
 
-  backend-jobs:
-    image: myapp/backend:latest
-    entrypoint: ['/bin/sh', '-c']
-    command:
-      - |
-        echo "0 2 * * * python /app/jobs/cleanup.py" > /etc/crontabs/root
-        echo "0 */6 * * * python /app/jobs/sync.py" >> /etc/crontabs/root
-        crond -f -L /dev/stdout
+  jobs:
+    entrypoint: ['busybox', 'crond', '-f', '-L', '/dev/stdout']
     environment:
-      DB_URL: postgresql://user:pass@postgres/db
-    depends_on:
-      - postgres
-    networks:
-      - app_network
-
-  postgres:
-    image: postgres:17-alpine
-    networks:
-      - app_network
-
-networks:
-  app_network:
-    driver: bridge
+      <<: *shared-env

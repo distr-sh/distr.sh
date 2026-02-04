@@ -19,11 +19,14 @@ tags:
 ---
 
 import {Aside, Code, TabItem, Tabs} from '@astrojs/starlight/components';
+import EmbeddedWhitePaperCta from '~/components/cta/embedded/EmbeddedWhitePaperCta.astro';
 import approach1Arch from '~/assets/blog/2026-02-03-docker-compose-cron-jobs/approach-1-architecture.svg';
 import approach2Arch from '~/assets/blog/2026-02-03-docker-compose-cron-jobs/approach-2-architecture.svg';
 import approach3Arch from '~/assets/blog/2026-02-03-docker-compose-cron-jobs/approach-3-architecture.svg';
 import approach1Dockerfile from './2026-02-03-docker-compose-cron-jobs/approach-1/Dockerfile?raw';
 import approach1Crontab from './2026-02-03-docker-compose-cron-jobs/approach-1/crontab?raw';
+import approach2Dockerfile from './2026-02-03-docker-compose-cron-jobs/approach-2/Dockerfile?raw';
+import approach2Crontab from './2026-02-03-docker-compose-cron-jobs/approach-2/crontab?raw';
 import approach2Compose from './2026-02-03-docker-compose-cron-jobs/approach-2/docker-compose.yaml?raw';
 import approach3Compose from './2026-02-03-docker-compose-cron-jobs/approach-3/docker-compose.yaml?raw';
 
@@ -74,7 +77,9 @@ A full example including a Docker Compose file with networking and backend servi
 
 ### Cron Scheduler in Docker Architecture
 
-<img src={approach1Arch.src} alt="Lightweight docker scheduler" />
+<div class="architecture-diagram">
+  <img src={approach1Arch.src} alt="Lightweight docker scheduler" />
+</div>
 
 The jobs service only initiates scheduled jobs by calling an endpoint on the backend service that will trigger the job actions.
 
@@ -84,34 +89,48 @@ This is the most lightweight approach and I personally like it the most, because
 If your service runs multiple replicas, the job will also only be executed once.
 Also memory usage will be stable, as no additional containers are spawned.
 
+<EmbeddedWhitePaperCta />
+
 ## Approach 2: Integrate Cron Jobs into your Backend Container
 
 The second approach reuses your existing backend image but overrides the entrypoint to run cron instead of your application server.
 This eliminates the need for a separate image while giving you access to your application's full codebase and dependencies.
 
-### Implementation
+### Integrated Cron Jobs Docker Implementation
 
 This implementation creates an "all-in-one" container that runs both the backend application and the cron scheduler.
 
 <Aside type="caution">
   Per default the processes spawned via cron won't have access to the environment variables of the container.
   You can pass them at the beginning of the cron file, or load them directly before executing the cron job.
+
+Additionally, cron job output is not visible in container logs by default. Use `>> /proc/1/fd/1 2>&1` at the end of your cron commands to redirect both stdout and stderr to the main container process (PID 1), making the output visible via `docker logs`.
+
 </Aside>
+
+&nbsp;
 
 <Tabs>
   <TabItem label="docker-compose.yaml">
     <Code code={approach2Compose} lang="yaml" />
   </TabItem>
+  <TabItem label="Dockerfile">
+    <Code code={approach2Dockerfile} lang="dockerfile" />
+  </TabItem>
+  <TabItem label="crontab">
+    <Code code={approach2Crontab} lang="bash" />
+  </TabItem>
 </Tabs>
 
+### Integrated Cron Jobs in Docker Architecture
 
-### Architecture
-
-<img src={approach2Arch.src} alt="Approach 2 Architecture" />
+<div class="architecture-diagram">
+  <img src={approach2Arch.src} alt="Integrated cron jobs in Docker backend container" />
+</div>
 
 When using this approach it is ususally recommended to still use multiple services with different entry points and not create a single service that starts the applicaiton and cron scheduler.
 
-### Integrate Cron Jobs into your Backend Container
+### Integrated Cron Jobs into Backend Container Conclusion
 
 If you applications jobs are designed in a way that they are separate executables, or you have a CLI that has different targets,
 this is the best approach without doing too much refactoring work inside your application.
@@ -119,22 +138,24 @@ this is the best approach without doing too much refactoring work inside your ap
 One of the disadvanatages is that if your application requires a lot of resources, this resource usage is doubled.
 This can be espacially disadvantageous for Java based applications that require a lot of memory to start up.
 
+Shared env variables are also a great way to share env variables between the services with delecaring them multiple times.
+
+<EmbeddedWhitePaperCta />
+
 ## Approach 3: Dedicated Job Launcher
 
 The third approach is to use job tool launcher tools like [Ofelia](https://github.com/mcuadros/ofelia) that can spawn new containers for each job execution.
 It requires Docker socket access to spawn new containers.
 
-### Implementation
+### Dedicated Job Launcher Docker Implementation
+&nbsp;
+<Code code={approach3Compose} lang="yaml" title="docker-compose.yaml" />
 
-<Tabs>
-  <TabItem label="docker-compose.yaml">
-    <Code code={approach3Compose} lang="yaml" title="docker-compose.yaml" />
-  </TabItem>
-</Tabs>
+### Dedicated Job Launcher Docker Architecture
 
-### Architecture
-
-<img src={approach3Arch.src} alt="Approach 3 Architecture" />
+<div class="architecture-diagram">
+  <img src={approach3Arch.src} alt="Dedicated Docker job launcher with Ofelia spawning containers" />
+</div>
 
 ### Dedicated Job Launcher for Docker Compose Conclusion
 
@@ -156,8 +177,6 @@ So it is only feasible if you have quite an oversized host system or lightweight
 | Docker Socket         | Not required                 | Not required                | Required                   |
 | Best For              | HTTP triggers                | Direct DB/code access       | Complex job workflows      |
 
-
-
 ## Conclusion
 
-Altough I would like to see docker a jobs extension (similar to Secrets)
+Altough I would like to see docker a jobs extension (similar to Secrets) it is not that complicated to implement peridoc jobs for Docker Compose.

@@ -1,47 +1,49 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 300" style="max-width: 100%; height: auto;">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 550 240" style="max-width: 100%; height: auto;">
   <defs>
     <style>
-      .box-red { fill: #dc2626; stroke: #b91c1c; stroke-width: 2; rx: 8; }
-      .box-blue { fill: #2563eb; stroke: #1e40af; stroke-width: 2; rx: 8; }
-      .box-purple { fill: #7c3aed; stroke: #6d28d9; stroke-width: 2; rx: 8; }
-      .box-dark { fill: #1e293b; stroke: #475569; stroke-width: 2; rx: 8; }
-      .text { fill: white; font-family: system-ui, sans-serif; font-size: 16px; font-weight: 600; }
-      .subtitle { fill: white; font-family: system-ui, sans-serif; font-size: 13px; }
-      .arrow { stroke: #64748b; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
-      .arrow-dash { stroke: #dc2626; stroke-width: 2; fill: none; marker-end: url(#arrowhead-red); stroke-dasharray: 5,5; }
-      .label { fill: #dc2626; font-family: system-ui, sans-serif; font-size: 13px; }
+      .box-accent { fill: #003653; stroke: #00273d; stroke-width: 2; rx: 6; }
+      .box-blue { fill: #0073aa; stroke: #003653; stroke-width: 2; rx: 6; }
+      .box-spawned { fill: #92d1fe; stroke: #0073aa; stroke-width: 2; rx: 6; }
+      .box-dark { fill: #424249; stroke: #313138; stroke-width: 2; rx: 6; }
+      .text { fill: white; font-family: system-ui, sans-serif; font-size: 14px; font-weight: 600; }
+      .text-dark { fill: #003653; font-family: system-ui, sans-serif; font-size: 14px; font-weight: 600; }
+      .subtitle { fill: #92d1fe; font-family: system-ui, sans-serif; font-size: 11px; }
+      .subtitle-dark { fill: #003653; font-family: system-ui, sans-serif; font-size: 11px; }
+      .arrow { stroke: #6f6f7e; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .arrow-dash { stroke: #0073aa; stroke-width: 2; fill: none; marker-end: url(#arrowhead-blue); stroke-dasharray: 5,5; }
+      .label { fill: #0073aa; font-family: system-ui, sans-serif; font-size: 12px; }
     </style>
     <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-      <polygon points="0 0, 10 3, 0 6" fill="#64748b" />
+      <polygon points="0 0, 10 3, 0 6" fill="#6f6f7e" />
     </marker>
-    <marker id="arrowhead-red" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-      <polygon points="0 0, 10 3, 0 6" fill="#dc2626" />
+    <marker id="arrowhead-blue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#0073aa" />
     </marker>
   </defs>
 
   <!-- Docker Socket -->
-  <rect class="box-dark" x="50" y="30" width="160" height="50" />
-  <text x="130" y="60" text-anchor="middle" class="text">Docker Socket</text>
+  <rect class="box-dark" x="40" y="25" width="140" height="40" />
+  <text x="110" y="50" text-anchor="middle" class="text">Docker Socket</text>
 
   <!-- Ofelia Container -->
-  <rect class="box-red" x="50" y="120" width="160" height="70" />
-  <text x="130" y="150" text-anchor="middle" class="text">ofelia</text>
-  <text x="130" y="170" text-anchor="middle" class="subtitle">Job Scheduler</text>
+  <rect class="box-accent" x="40" y="95" width="140" height="55" />
+  <text x="110" y="118" text-anchor="middle" class="text">ofelia</text>
+  <text x="110" y="135" text-anchor="middle" class="subtitle">Job Scheduler</text>
 
   <!-- Backend Container -->
-  <rect class="box-blue" x="50" y="220" width="160" height="60" />
-  <text x="130" y="255" text-anchor="middle" class="text">backend</text>
+  <rect class="box-blue" x="40" y="180" width="140" height="45" />
+  <text x="110" y="207" text-anchor="middle" class="text">backend</text>
 
   <!-- Job Containers -->
-  <rect class="box-purple" x="320" y="120" width="280" height="60" />
-  <text x="460" y="155" text-anchor="middle" class="text">job-cleanup (spawned)</text>
+  <rect class="box-spawned" x="270" y="95" width="240" height="45" />
+  <text x="390" y="122" text-anchor="middle" class="text-dark">job-cleanup (spawned)</text>
 
-  <rect class="box-purple" x="320" y="200" width="280" height="60" />
-  <text x="460" y="235" text-anchor="middle" class="text">job-reports (spawned)</text>
+  <rect class="box-spawned" x="270" y="160" width="240" height="45" />
+  <text x="390" y="187" text-anchor="middle" class="text-dark">job-reports (spawned)</text>
 
   <!-- Arrows -->
-  <path class="arrow" d="M 130 80 L 130 115"/>
-  <path class="arrow-dash" d="M 210 150 L 315 150"/>
-  <path class="arrow-dash" d="M 210 165 L 260 200 L 315 230"/>
-  <text x="250" y="145" class="label">spawns</text>
+  <path class="arrow" d="M 110 65 L 110 90"/>
+  <path class="arrow-dash" d="M 180 117 L 265 117"/>
+  <path class="arrow-dash" d="M 180 130 L 225 165 L 265 183"/>
+  <text x="215" y="112" class="label">spawns</text>
 </svg>
