@@ -25,6 +25,7 @@ import approach2Arch from '~/assets/blog/2026-02-03-docker-compose-cron-jobs/app
 import approach3Arch from '~/assets/blog/2026-02-03-docker-compose-cron-jobs/approach-3-architecture.svg';
 import approach1Dockerfile from './2026-02-03-docker-compose-cron-jobs/approach-1/Dockerfile?raw';
 import approach1Crontab from './2026-02-03-docker-compose-cron-jobs/approach-1/crontab?raw';
+import approach1ComposeInline from './2026-02-03-docker-compose-cron-jobs/approach-1/docker-compose-inline.yaml?raw';
 import approach2Dockerfile from './2026-02-03-docker-compose-cron-jobs/approach-2/Dockerfile?raw';
 import approach2Crontab from './2026-02-03-docker-compose-cron-jobs/approach-2/crontab?raw';
 import approach2Compose from './2026-02-03-docker-compose-cron-jobs/approach-2/docker-compose.yaml?raw';
@@ -35,7 +36,7 @@ Our Open Source Software Distribution platform is available on GitHub ([`github.
 
 [Docker Compose](https://docs.docker.com/compose/) is a great orchestration tool for easily deploying multi-container applications.
 However, Docker Compose doesn't natively support scheduled jobs.
-Although this sounds like a complicated problem at first, the solutions are actually quite simple.
+Although this sounds like a complicated problem at first, possible solutions are actually quite simple.
 
 <hr />
 
@@ -43,11 +44,22 @@ Although this sounds like a complicated problem at first, the solutions are actu
 
 Traditionally, servers used to run for a long time (usually even way too long).
 The Unix [cron](https://en.wikipedia.org/wiki/Cron) utility was invented in the early days of Unix to schedule tasks at specific times on the host system.
+Although nowadays multiple abstractions and reimplementations of cron exist, its original configuration file _crontab_ (short for "cron table") syntax is still widely adopted and used today.
 
-Its configuration file _crontab_ (short for "cron table") syntax is still widely adopted and used today.
-In a containerized environment, a container often represents a short-lived process that usually doesn't spawn other processes, simplifying container monitoring.
+A cronjob implementation is also available in several container orchestration platforms:
 
-Additionally, not all utilities are present in all containers, as containers aim to be as lightweight as possible.
+- [Kubernetes CronJobs](https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/)
+- [AWS ECS Scheduled Tasks](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/scheduling_tasks.html)
+- [Google Cloud Scheduler](https://docs.cloud.google.com/scheduler/docs)
+- [Jobs in Azure Container Apps](https://learn.microsoft.com/en-us/azure/container-apps/jobs)
+
+This is contrary to Docker, which never had a built-in cron implementation.
+On a single container level this actually makes sense as a container often represents a process that usually doesn't spawn other processes, simplifying container management and monitoring.
+
+Although Docker compose is a tool for defining multi-container applications, it doesn't provide a built-in cron job implementation for container scheduling.
+A lot of applications depend on scheduled tasks, such as cleanup jobs, report generation, or data synchronization.
+While this could theoretically be done on an application level (e.g. [Spring Boot's @Scheduled annotation](https://spring.io/guides/gs/scheduling-tasks) or [a Golang Job Scheduling Package `gocron`](https://github.com/go-co-op/gocron)), when starting multiple replicas of an application, synchronizing these tasks can become complex to ensure they are not executed multiple times simultaneously.
+So it is still a challenge to reliably schedule cron jobs in a multi-container environment with Docker Compose.
 
 I've encountered this challenge repeatedly while working on Distr deployments across different customer environments.
 After testing various approaches in production, three patterns emerged as practical solutions, each with different trade-offs.
@@ -59,18 +71,27 @@ This container initiates actions in other services via HTTP calls or executes lo
 
 ### Cron Scheduler Docker Implementation
 
-This is the simplest minimal implementation to use a cron scheduler in Alpine Linux:
+There are two ways to implement this approach:
+
+**Option 1: Custom Dockerfile** - Build a dedicated image with your crontab baked in. This is ideal when you want to share your jobs container across different deployment methods and don't have full control over your deployment target.
+
+**Option 2: Volume Mount** - Use a stock Alpine image and mount your crontab file as a volume. This allows for quick iteration and changes without rebuilding images. _Tip:_ You can also use [Docker Compose Configs](https://docs.docker.com/reference/compose-file/configs/) to inline your crontab file.
 
 <Tabs>
-  <TabItem label="Dockerfile">
+  <TabItem label="Option 1: Dockerfile">
     <Code code={approach1Dockerfile} lang="dockerfile" />
+  </TabItem>
+  <TabItem label="Option 2: docker-compose.yaml">
+    <Code code={approach1ComposeInline} lang="yaml" />
   </TabItem>
   <TabItem label="crontab">
     <Code code={approach1Crontab} lang="txt" />
   </TabItem>
 </Tabs>
 
-A full example including a Docker Compose file with networking and backend services can be found in our example application [`hello-distr`](https://github.com/distr-sh/hello-distr).
+Both options use the same crontab file format. Option 1 requires building a custom image, while Option 2 mounts the crontab file directly into an Alpine container.
+
+A full production example using Option 1 can be found in our example application [`hello-distr`](https://github.com/distr-sh/hello-distr):
 
 - Jobs service with its [`Dockerfile`](https://github.com/distr-sh/hello-distr/blob/main/jobs/Dockerfile) and [`crontab`](https://github.com/distr-sh/hello-distr/blob/main/jobs/crontab) configuration
 - Full [`docker-compose.yml`](https://github.com/distr-sh/hello-distr/blob/main/deploy/docker-compose.yaml) file including the jobs service
@@ -89,6 +110,10 @@ This is the most lightweight approach, and I personally prefer it because all th
 If your service runs multiple replicas, the job will only be executed once.
 Additionally, memory usage remains stable, as no additional containers are spawned.
 
+**Choose Option 1 (Custom Dockerfile)** when you want your cron schedule to be version-controlled alongside your application code, or when deploying to production environments where immutable infrastructure is preferred. The crontab becomes part of your deployment artifact.
+
+**Choose Option 2 (Volume Mount)** during development or when your cron schedules need to change frequently without rebuilding images. This is also useful when the same base image needs different cron configurations across environments—simply mount different crontab files.
+
 <EmbeddedWhitePaperCta />
 
 ## Approach 2: Integrate Cron Jobs into your Backend Container
@@ -103,12 +128,10 @@ This implementation creates an "all-in-one" container that runs both the backend
 <Aside type="caution">
   By default, processes spawned via cron don't have access to the container's environment variables.
   You can pass them at the beginning of the cron file or load them directly before executing the cron job.
-
-Additionally, cron job output is not visible in container logs by default. Use `>> /proc/1/fd/1 2>&1` at the end of your cron commands to redirect both stdout and stderr to the main container process (PID 1), making the output visible via `docker logs`.
-
+  Additionally, cron job output is not visible in container logs by default. Use `>> /proc/1/fd/1 2>&1` at the end of your cron commands to redirect both stdout and stderr to the main container process (PID 1), making the output visible via `docker logs`.
 </Aside>
 
-&nbsp;
+Shared environment variables are also a great way to avoid declaring them multiple times across services.
 
 <Tabs>
   <TabItem label="docker-compose.yaml">
@@ -140,8 +163,6 @@ this is the best approach without requiring extensive refactoring inside your ap
 
 One of the disadvantages is that if your application requires significant resources, this resource usage is doubled.
 This can be especially disadvantageous for JVM-based applications that require substantial memory to start up.
-
-Shared environment variables are also a great way to avoid declaring them multiple times across services.
 
 <EmbeddedWhitePaperCta />
 
