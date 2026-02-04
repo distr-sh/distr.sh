@@ -15,13 +15,13 @@
 
   <!-- Backend Container -->
   <rect class="box-blue" x="40" y="30" width="160" height="55" />
-  <text x="120" y="53" text-anchor="middle" class="text">backend</text>
-  <text x="120" y="70" text-anchor="middle" class="subtitle">Application Server</text>
+  <text x="120" y="53" text-anchor="middle" class="text">backend-aio</text>
+  <text x="120" y="70" text-anchor="middle" class="subtitle">entrypoint: /app/app</text>
 
   <!-- Backend Jobs Container -->
   <rect class="box-accent" x="40" y="115" width="160" height="55" />
-  <text x="120" y="138" text-anchor="middle" class="text">backend-jobs</text>
-  <text x="120" y="155" text-anchor="middle" class="subtitle">Cron Jobs</text>
+  <text x="120" y="138" text-anchor="middle" class="text">backend-aio</text>
+  <text x="120" y="155" text-anchor="middle" class="subtitle">entrypoint: crond</text>
 
   <!-- Postgres Container -->
   <rect class="box-gray" x="300" y="70" width="160" height="55" />
