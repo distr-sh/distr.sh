@@ -171,9 +171,20 @@ This can be especially disadvantageous for JVM-based applications that require s
 The third approach uses dedicated job launcher tools like [Ofelia](https://github.com/mcuadros/ofelia) that can spawn new containers for each job execution.
 This approach requires that you give the job launcher access to the Docker socket in order to spawn new containers.
 
+<Aside type="note">
+  Ofelia is used here as an example of a Docker socket-based scheduler. I am not
+  affiliated with this project—it simply demonstrates the dedicated launcher
+  pattern well.
+</Aside>
+
 ### Dedicated Job Launcher Docker Implementation
 
 This implementation uses Ofelia to manage cron jobs by spawning separate containers for each job execution, providing maximum isolation and flexibility.
+
+Ofelia discovers jobs via Docker labels on containers. Two job types are demonstrated:
+
+- `job-exec` (e.g. cleanup): Executes commands inside the running backend container
+- `job-run` (e.g. reports): Spawns a new temporary container for each execution, requiring an explicit `image` and `network` configuration
 
 <Code code={approach3Compose} lang="yaml" title="docker-compose.yaml" />
 
@@ -202,13 +213,22 @@ This approach is only feasible if you have an oversized host system or lightweig
 
 &nbsp;
 
-| Feature               | Lightweight Cron Job Trigger | Embedded Cron Job Scheduler | Distinct Cron Job Launcher |
-| --------------------- | ---------------------------- | --------------------------- | -------------------------- |
-| Resource Requirements | Minimal                      | Medium                      | High                       |
-| Job Isolation         | None                         | None                        | Full                       |
-| Setup Complexity      | Low                          | Medium                      | High                       |
-| Docker Socket         | Not required                 | Not required                | Required                   |
-| Best For              | HTTP triggers                | Direct DB/code access       | Complex job workflows      |
+| Feature                | Lightweight Cron Job Trigger | Embedded Cron Job Scheduler | Distinct Cron Job Launcher |
+| ---------------------- | ---------------------------- | --------------------------- | -------------------------- |
+| Resource Requirements  | Minimal                      | Medium (2x app size)        | High (dynamic)\*           |
+| Job Isolation          | None                         | Process-level               | Full container isolation   |
+| Setup Complexity       | Low                          | Medium                      | High                       |
+| Docker Socket Access   | Not required                 | Not required                | Required (security risk)   |
+| Multi-Replica Support  | Excellent                    | Poor                        | Good                       |
+| Job Failure Handling   | App-dependent                | App-dependent               | Container exit codes       |
+| Environment Variables  | Shared via network           | Fully shared                | Explicitly configured      |
+| Image Requirements     | Separate minimal image       | Same as app                 | Any image per job          |
+| Logs Visibility        | Via app logs                 | Requires redirection        | Separate container logs    |
+| Tech Stack Flexibility | Limited to HTTP              | Same as app                 | Any per job                |
+| Suitable for JVM Apps  | Yes                          | No (high memory)            | Yes (isolated)             |
+| Best For               | HTTP triggers                | Direct DB/code access       | Complex job workflows      |
+
+\* While resource requirements are high, parallel job execution is easier to achieve with isolated containers.
 
 ## Conclusion
 
@@ -223,5 +243,7 @@ Each approach has its place depending on your specific requirements:
 **Choose Approach 3 (Dedicated Launcher)** when you need maximum flexibility and job isolation. If your jobs require different runtime environments, programming languages, or heavy isolation from your main application, the additional complexity and security considerations of Docker socket access become worthwhile trade-offs.
 
 For most production deployments I've worked on, Approach 1 proves to be the sweet spot—it's simple, resource-efficient, and aligns well with container best practices. However, the "right" choice always depends on your specific application architecture and operational requirements.
+
+**Important scheduling tip:** Avoid scheduling multiple jobs at minute zero of the hour. Distribute your cron schedules across the hour (e.g., `5 * * * *`, `15 * * * *`, `30 * * * *`) to prevent resource spikes. While this is generally recommended for any cron setup, it's particularly critical for Docker Compose deployments with non-dynamic resource allocation where simultaneous job execution can cause memory exhaustion or container crashes.
 
 The key takeaway: scheduled jobs in Docker Compose don't require complex orchestration systems. With a few lines of configuration and an understanding of these patterns, you can implement robust job scheduling that scales with your application.
