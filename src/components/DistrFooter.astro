@@ -2,6 +2,8 @@
 import {Icon} from '@astrojs/starlight/components';
 import ThemedImage from './util/ThemedImage.astro';
 import distr from '../assets/distr-brand.svg';
+
+const currentYear = new Date().getFullYear();
 ---
 
 <footer
@@ -213,7 +215,7 @@ import distr from '../assets/distr-brand.svg';
         class="flex flex-col-reverse sm:flex-row justify-between items-center">
         {/* Copyright */}
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-4 sm:mt-0">
-          © 2026 Glasskube, Inc.
+          © {currentYear} Glasskube, Inc.
         </p>
 
         {/* Social Links */}

@@ -1,6 +1,8 @@
 ---
 import ThemeProvider from 'virtual:starlight/components/ThemeProvider';
 import ThemeSelect from 'virtual:starlight/components/ThemeSelect';
+
+const currentYear = new Date().getFullYear();
 ---
 
 <footer class="dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
@@ -8,7 +10,9 @@ import ThemeSelect from 'virtual:starlight/components/ThemeSelect';
     <div
       class="mt-8 pt-8 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
       <div class="flex-1"></div>
-      <p class="flex-1 text-center">&copy; 2026 Distr. All rights reserved.</p>
+      <p class="flex-1 text-center">
+        &copy; {currentYear} Distr. All rights reserved.
+      </p>
       <div class="flex-1 flex items-center justify-end space-x-4">
         <ThemeProvider />
         <ThemeSelect />
