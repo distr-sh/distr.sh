@@ -6,6 +6,7 @@ import DistrFooter from '../DistrFooter.astro';
 
 const {entry} = Astro.locals.starlightRoute;
 const isSplashTemplate = entry.data.template === 'splash';
+const currentYear = new Date().getFullYear();
 ---
 
 <footer class="sl-flex">
@@ -17,7 +18,7 @@ const isSplashTemplate = entry.data.template === 'splash';
           <LastUpdated />
         </div>
         <Pagination />
-        <div class="kudos sl-flex">© 2025 Glasskube, Inc.</div>
+        <div class="kudos sl-flex">© {currentYear} Glasskube, Inc.</div>
       </>
     )
   }
