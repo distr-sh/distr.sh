@@ -1,7 +1,7 @@
-import {products} from '~/data/products';
-import {docsMenu, pricingMenu, resourcesMenu} from '~/data/menus';
 import type {MenuItem} from '~/data/menus';
+import {docsMenu, pricingMenu, resourcesMenu} from '~/data/menus';
 import type {Product} from '~/data/products';
+import {products} from '~/data/products';
 
 export type MegaMenuType = 'products' | 'docs' | 'pricing' | 'resources';
 
