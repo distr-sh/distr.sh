@@ -1,0 +1,79 @@
+export type Product = {
+  title: string;
+  description: string;
+  value: string;
+  href: string;
+};
+
+export const products: Product[] = [
+  {
+    title: 'Deployment Agents',
+    description:
+      'Standardize your Docker or Helm deployments embedded with agents in Kubernetes, Docker Compose, VM or Bare Metal environments',
+    value: 'rocket',
+    href: '/docs/deployment-agents/',
+  },
+  {
+    title: 'Container Registry',
+    description:
+      'Distribute Docker Images, Helm Charts, or every OCI compatible artifact like large LLM Models with our high performance OCI registry',
+    value: 'package',
+    href: '/docs/container-registry/',
+  },
+  {
+    title: 'License Management',
+    description:
+      'Time based access control and entitlements for Applications and Artifacts - managed in a central place',
+    value: 'key',
+    href: '/docs/license-management/',
+  },
+  {
+    title: 'Alerts',
+    description:
+      'Receive notification in realtime when deployments report an error or go stale',
+    value: 'bell',
+    href: '/docs/alerts/',
+  },
+  {
+    title: 'Logs and Metrics',
+    description:
+      'Collect Logs and Metrics in realtime and directly download them as bundle for better Customer support',
+    value: 'chart-line',
+    href: '/docs/logs-metrics/',
+  },
+  {
+    title: 'Compatibility Matrix',
+    description:
+      'Automatically test, if your Application is compatible across a matrix of possible deployment environments',
+    value: 'check-circle',
+    href: '/docs/compatibility-checks/',
+  },
+  {
+    title: 'Pre Flight Checks',
+    description:
+      'Determine if needed resources are available or execute custom pre and post installation scripts',
+    value: 'clipboard-check',
+    href: '/docs/pre-flight-checks/',
+  },
+  {
+    title: 'Customer Portal',
+    description:
+      'Where customers can download Artifacts and manage their Applications',
+    value: 'circle-user',
+    href: '/docs/product/customer-portal/',
+  },
+  {
+    title: 'Integrations / BYOC',
+    description:
+      'Extend your pull based deployment model with push based approaches with our API Integrations and GitHub Action',
+    value: 'workflow',
+    href: '/docs/integrations/',
+  },
+  {
+    title: 'Air-gapped',
+    description:
+      'Distribute your application with air-gapped bundles into the most isolated environments',
+    value: 'server-off',
+    href: '/docs/use-cases/air-gapped-deployments/',
+  },
+];

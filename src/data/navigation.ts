@@ -2,9 +2,15 @@ export type NavigationLink = {
   title: string;
   value: string;
   children?: NavigationLink[];
+  isMegaMenu?: boolean;
 };
 
 export const links: NavigationLink[] = [
+  {
+    title: 'Product',
+    value: 'product',
+    isMegaMenu: true,
+  },
   {
     title: 'Docs',
     value: '/docs/',
