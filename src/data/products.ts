@@ -44,14 +44,14 @@ export const products: Product[] = [
   {
     title: 'Compatibility Matrix',
     description:
-      'Automatically test, if your Application is compatible across a matrix of possible deployment environments',
+      'In Development - Automatically test, if your Application is compatible across a matrix of possible deployment environments',
     value: 'check-circle',
     href: '/docs/product/agents/',
   },
   {
     title: 'Pre Flight Checks',
     description:
-      'Determine if needed resources are available or execute custom pre and post installation scripts',
+      'In Development - Determine if needed resources are available or execute custom pre and post installation scripts',
     value: 'clipboard-check',
     href: '/docs/product/agents/',
   },
@@ -72,7 +72,7 @@ export const products: Product[] = [
   {
     title: 'Air-gapped',
     description:
-      'Distribute your application with air-gapped bundles into the most isolated environments',
+      'Enterprise - Distribute your application with air-gapped bundles into the most isolated environments',
     value: 'server-off',
     href: '/docs/use-cases/air-gapped/',
   },
