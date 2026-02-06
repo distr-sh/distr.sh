@@ -39,7 +39,7 @@ export const products: Product[] = [
     description:
       'Collect Logs and Metrics in realtime and directly download them as bundle for better Customer support',
     value: 'chart-line',
-    href: '/docs/product/agents/#logs-and-metrics',
+    href: '/docs/product/agents/#container-logs',
   },
   {
     title: 'Compatibility Matrix',
