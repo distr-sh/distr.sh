@@ -65,14 +65,20 @@
     ol {
       @apply space-y-1;
       @apply ml-3;
-      @apply list-inside;
     }
 
     ul {
+      list-style-position: outside;
       @apply list-disc;
+      padding-left: 1.25rem;
+    }
+
+    ul li {
+      padding-left: 0.125rem;
     }
 
     ol {
+      @apply list-inside;
       @apply list-decimal;
     }
   }
