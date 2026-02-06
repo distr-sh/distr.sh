@@ -46,7 +46,6 @@ const menuWidth = numericWidth * columns + gap * (columns - 1) + padding;
 
   <div
     class="mega-menu"
-    role="menu"
     data-menu-id={menuId}
     style={`width: ${menuWidth}px; max-width: 90vw;`}>
     <div
@@ -59,8 +58,7 @@ const menuWidth = numericWidth * columns + gap * (columns - 1) + padding;
             class="menu-item"
             data-index={index}
             data-menu-id={menuId}
-            data-description={item.description}
-            role="menuitem">
+            data-description={item.description}>
             <div class="menu-icon">
               <Icon name={`lucide:${item.value}`} class="icon-size" />
             </div>
@@ -72,7 +70,7 @@ const menuWidth = numericWidth * columns + gap * (columns - 1) + padding;
 
     <div class="menu-description-container">
       <p class="menu-description" id={descriptionId}>
-        {items[0].description}
+        {items.length > 0 ? items[0].description : ''}
       </p>
     </div>
   </div>
@@ -93,25 +91,29 @@ const menuWidth = numericWidth * columns + gap * (columns - 1) + padding;
 
       if (!wrapper || !trigger || !menu || !descriptionElement) return;
 
-      // Get menu data for descriptions
-      const itemsData = Array.from(menuItems).map(item => {
-        return {
-          description:
-            item.querySelector('.menu-item-title')?.textContent || '',
-        };
-      });
-
       // Function to parse and render description with badge
       const renderDescription = (description: string) => {
         const badgeRegex = /^(In Development|Enterprise|Beta|Alpha)\s*-\s*/i;
         const match = description.match(badgeRegex);
+
+        // Clear existing content
+        descriptionElement.textContent = '';
 
         if (match) {
           const badge = match[1];
           const text = description.replace(badgeRegex, '');
           const badgeClass = badge.toLowerCase().replace(/\s+/g, '-');
 
-          descriptionElement.innerHTML = `<span class="menu-badge menu-badge-${badgeClass}">${badge}</span> ${text}`;
+          // Create badge element safely
+          const badgeSpan = document.createElement('span');
+          badgeSpan.className = `menu-badge menu-badge-${badgeClass}`;
+          badgeSpan.textContent = badge;
+
+          // Append badge and the remaining description text
+          descriptionElement.appendChild(badgeSpan);
+          descriptionElement.appendChild(
+            document.createTextNode(text ? ` ${text}` : ''),
+          );
         } else {
           descriptionElement.textContent = description;
         }
@@ -172,6 +174,24 @@ const menuWidth = numericWidth * columns + gap * (columns - 1) + padding;
           } else {
             openMenu();
           }
+        } else if (e.key === 'Escape' && isOpen) {
+          e.preventDefault();
+          closeMenu();
+        }
+      });
+
+      // Close menu on outside click
+      document.addEventListener('click', e => {
+        if (isOpen && !wrapper.contains(e.target as Node)) {
+          closeMenu();
+        }
+      });
+
+      // Close menu on focus out
+      wrapper.addEventListener('focusout', e => {
+        // Check if the new focus target is outside the wrapper
+        if (isOpen && !wrapper.contains(e.relatedTarget as Node)) {
+          closeMenu();
         }
       });
     });

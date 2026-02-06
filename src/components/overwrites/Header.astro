@@ -6,8 +6,7 @@ import SocialIcons from './SocialIcons.astro';
 import ThemeSelect from './ThemeSelect.astro';
 import MegaMenu from '~/components/navigation/MegaMenu.astro';
 import {links} from '~/data/navigation';
-import {products} from '~/data/products';
-import {docsMenu, pricingMenu, resourcesMenu} from '~/data/menus';
+import {megaMenuConfigs} from '~/data/megaMenuConfig';
 
 const slug = Astro.locals.starlightRoute.entry.slug;
 ---
@@ -22,18 +21,21 @@ const slug = Astro.locals.starlightRoute.entry.slug;
   <div class="sl-flex nav-centered">
     <nav class="desktop" aria-label="Main navigation">
       {
-        links.map((link) => (
+        links.map((link) => {
+          const megaMenuConfig = link.isMegaMenu && link.megaMenuType
+            ? megaMenuConfigs[link.megaMenuType]
+            : null;
+
+          return (
           <div class="nav-item">
-            {link.isMegaMenu ? (
-              link.megaMenuType === 'products' ? (
-                <MegaMenu title={link.title} items={products} columns={5} itemWidth="140px" href="/docs/product/agents/" />
-              ) : link.megaMenuType === 'docs' ? (
-                <MegaMenu title={link.title} items={docsMenu} columns={4} itemWidth="160px" href="/docs/" />
-              ) : link.megaMenuType === 'pricing' ? (
-                <MegaMenu title={link.title} items={pricingMenu} columns={2} itemWidth="200px" href="/pricing/" />
-              ) : link.megaMenuType === 'resources' ? (
-                <MegaMenu title={link.title} items={resourcesMenu} columns={4} itemWidth="160px" href="/blog/" />
-              ) : null
+            {link.isMegaMenu && megaMenuConfig ? (
+              <MegaMenu
+                title={link.title}
+                items={megaMenuConfig.items}
+                columns={megaMenuConfig.columns}
+                itemWidth={megaMenuConfig.itemWidth}
+                href={link.value}
+              />
             ) : link.children ? (
               <div class="dropdown">
                 <button
@@ -66,7 +68,8 @@ const slug = Astro.locals.starlightRoute.entry.slug;
               <a href={link.value}>{link.title}</a>
             )}
           </div>
-        ))
+          );
+        })
       }
     </nav>
   </div>
@@ -183,7 +186,7 @@ const slug = Astro.locals.starlightRoute.entry.slug;
     }
   }
 
-  @media (min-width: 50rem) and (min-width: 72rem) and (max-width: 100rem) {
+  @media (min-width: 72rem) and (max-width: 100rem) {
     .header {
       grid-template-columns:
         minmax(400px, auto)
@@ -192,7 +195,7 @@ const slug = Astro.locals.starlightRoute.entry.slug;
     }
   }
 
-  @media (min-width: 50rem) and (min-width: 100rem) {
+  @media (min-width: 100rem) {
     .header {
       grid-template-columns:
         minmax(550px, auto)

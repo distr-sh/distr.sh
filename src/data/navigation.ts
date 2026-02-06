@@ -1,9 +1,11 @@
+import type {MegaMenuType} from '~/data/megaMenuConfig';
+
 export type NavigationLink = {
   title: string;
   value: string;
   children?: NavigationLink[];
   isMegaMenu?: boolean;
-  megaMenuType?: string;
+  megaMenuType?: MegaMenuType;
 };
 
 export const links: NavigationLink[] = [
