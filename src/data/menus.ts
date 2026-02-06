@@ -15,8 +15,7 @@ export const docsMenu: MenuItem[] = [
   },
   {
     title: 'Guides',
-    description:
-      'Step-by-step guides for common tasks and workflows in Distr',
+    description: 'Step-by-step guides for common tasks and workflows in Distr',
     value: 'map',
     href: '/docs/guides/',
   },
@@ -56,8 +55,7 @@ export const pricingMenu: MenuItem[] = [
 export const resourcesMenu: MenuItem[] = [
   {
     title: 'Blog',
-    description:
-      'Latest news, updates, and insights from the Distr team',
+    description: 'Latest news, updates, and insights from the Distr team',
     value: 'newspaper',
     href: '/blog/',
   },
@@ -70,8 +68,7 @@ export const resourcesMenu: MenuItem[] = [
   },
   {
     title: 'Glossary',
-    description:
-      'Understand key terms and concepts in software distribution',
+    description: 'Understand key terms and concepts in software distribution',
     value: 'book-text',
     href: '/glossary/',
   },

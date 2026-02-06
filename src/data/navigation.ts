@@ -9,7 +9,7 @@ export type NavigationLink = {
 export const links: NavigationLink[] = [
   {
     title: 'Product',
-    value: 'products',
+    value: '/docs/product/agents/',
     isMegaMenu: true,
     megaMenuType: 'products',
   },
