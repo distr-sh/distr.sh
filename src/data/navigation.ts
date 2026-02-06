@@ -3,42 +3,32 @@ export type NavigationLink = {
   value: string;
   children?: NavigationLink[];
   isMegaMenu?: boolean;
+  megaMenuType?: string;
 };
 
 export const links: NavigationLink[] = [
   {
     title: 'Product',
-    value: 'product',
+    value: 'products',
     isMegaMenu: true,
+    megaMenuType: 'products',
   },
   {
     title: 'Docs',
     value: '/docs/',
+    isMegaMenu: true,
+    megaMenuType: 'docs',
   },
   {
     title: 'Pricing',
     value: '/pricing/',
+    isMegaMenu: true,
+    megaMenuType: 'pricing',
   },
   {
     title: 'Resources',
-    value: 'javascript:void(0)',
-    children: [
-      {
-        title: 'Blog',
-        value: '/blog/',
-      },
-      {
-        title: 'Case Studies',
-        value: '/case-studies/',
-      },
-      {
-        title: 'Glossary',
-        value: '/glossary/',
-      },
-      {
-        title: 'White Paper',
-        value: '/white-paper/building-blocks/',
-      },
-    ],
+    value: '/blog/',
+    isMegaMenu: true,
+    megaMenuType: 'resources',
   },
 ];

@@ -4,8 +4,10 @@ import Search from '@astrojs/starlight/components/Search.astro';
 import SiteTitle from './SiteTitle.astro';
 import SocialIcons from './SocialIcons.astro';
 import ThemeSelect from './ThemeSelect.astro';
-import ProductsMegaMenu from '~/components/navigation/ProductsMegaMenu.astro';
+import MegaMenu from '~/components/navigation/MegaMenu.astro';
 import {links} from '~/data/navigation';
+import {products} from '~/data/products';
+import {docsMenu, pricingMenu, resourcesMenu} from '~/data/menus';
 
 const slug = Astro.locals.starlightRoute.entry.slug;
 ---
@@ -23,7 +25,15 @@ const slug = Astro.locals.starlightRoute.entry.slug;
         links.map((link) => (
           <div class="nav-item">
             {link.isMegaMenu ? (
-              <ProductsMegaMenu />
+              link.megaMenuType === 'products' ? (
+                <MegaMenu title={link.title} items={products} columns={5} itemWidth="140px" href="/docs/product/agents/" />
+              ) : link.megaMenuType === 'docs' ? (
+                <MegaMenu title={link.title} items={docsMenu} columns={4} itemWidth="160px" href="/docs/" />
+              ) : link.megaMenuType === 'pricing' ? (
+                <MegaMenu title={link.title} items={pricingMenu} columns={2} itemWidth="200px" href="/pricing/" />
+              ) : link.megaMenuType === 'resources' ? (
+                <MegaMenu title={link.title} items={resourcesMenu} columns={4} itemWidth="160px" href="/blog/" />
+              ) : null
             ) : link.children ? (
               <div class="dropdown">
                 <button
@@ -240,7 +250,7 @@ const slug = Astro.locals.starlightRoute.entry.slug;
     display: none;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
+    gap: 2rem;
     padding-inline-end: 1rem;
   }
   @media (min-width: 72rem) {
