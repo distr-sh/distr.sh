@@ -143,15 +143,19 @@ const menuWidth = numericWidth * columns + gap * (columns - 1) + padding;
         }
         isOpen = true;
         (menu as HTMLElement).style.display = 'block';
+        // Force reflow to enable animation
+        void (menu as HTMLElement).offsetHeight;
+        (menu as HTMLElement).classList.add('menu-open');
         trigger.setAttribute('aria-expanded', 'true');
       };
 
       const closeMenu = () => {
+        (menu as HTMLElement).classList.remove('menu-open');
         closeTimeout = window.setTimeout(() => {
           isOpen = false;
           (menu as HTMLElement).style.display = 'none';
           trigger.setAttribute('aria-expanded', 'false');
-        }, 150);
+        }, 200);
       };
 
       wrapper.addEventListener('mouseenter', openMenu);
@@ -243,13 +247,22 @@ const menuWidth = numericWidth * columns + gap * (columns - 1) + padding;
     position: absolute;
     top: calc(100% + 1rem);
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%) translateY(-10px);
     background-color: var(--sl-color-bg-nav);
     border: 1px solid var(--sl-color-gray-5);
     border-radius: 0.75rem;
     padding: 1.5rem;
     z-index: 1000;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    transition:
+      opacity 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .mega-menu.menu-open {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
 
   .menu-grid {
