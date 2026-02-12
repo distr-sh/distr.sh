@@ -70,10 +70,11 @@
     ul {
       list-style-position: outside;
       @apply list-disc;
+      @apply ml-0;
       padding-left: 1.25rem;
     }
 
-    ul li {
+    ul > li {
       padding-left: 0.125rem;
     }
 
