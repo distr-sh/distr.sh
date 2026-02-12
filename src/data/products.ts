@@ -53,7 +53,7 @@ export const products: Product[] = [
     description:
       'In Development - Determine if needed resources are available or execute custom pre and post installation scripts',
     value: 'clipboard-check',
-    href: '/docs/product/agents/',
+    href: '/docs/guides/preflight-checks/',
   },
   {
     title: 'Customer Portal',
