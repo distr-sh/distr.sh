@@ -32,7 +32,7 @@ export const products: Product[] = [
     description:
       'Receive notification in realtime when deployments report an error or go stale',
     value: 'bell',
-    href: '/docs/product/deployment-status-notifications/',
+    href: '/docs/product/alters/',
   },
   {
     title: 'Logs and Metrics',
