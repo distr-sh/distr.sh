@@ -1,0 +1,51 @@
+services:
+  webapp:
+    image: myapp:latest
+    networks:
+      - app-network
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+    ports:
+      - target: 8080
+        published: 80
+        protocol: tcp
+        mode: ingress
+
+  api:
+    image: myapi:latest
+    networks:
+      - app-network
+    deploy:
+      replicas: 2
+    ports:
+      - target: 3000
+        published: 3000
+        protocol: tcp
+        mode: ingress
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: myapp
+      POSTGRES_USER: myapp
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    secrets:
+      - db_password
+
+networks:
+  app-network:
+    driver: overlay
+
+volumes:
+  db-data:
+
+secrets:
+  db_password:
+    external: true
