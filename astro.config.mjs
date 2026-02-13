@@ -201,7 +201,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     '/docs/getting-started/quickstart/': '/docs/quickstart/',
     '/docs/getting-started/deployment-methods/': '/docs/subscription/',
     '/docs/product/distr-hub/': '/docs/product/vendor-portal/',
-    '/docs/product/deployment-status-notifications/': '/docs/product/alters/',
     '/docs/use-cases/self-managed/': '/docs/use-cases/fully-self-managed/',
     '/docs/use-cases/byoc/': '/docs/use-cases/byoc-bring-your-own-cloud/',
     '/docs/use-cases/air-gapped/': '/docs/use-cases/air-gapped-deployments/',
