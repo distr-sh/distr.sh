@@ -98,14 +98,18 @@ The `mode: ingress` setting (which is the default) tells Docker to use the routi
 Every node in the swarm will accept connections on ports 80 and 3000, forwarding them to available replicas.
 
 <Aside type="note">
-  The `ports` section must be at the service level (not inside `deploy`) for Docker Swarm stacks.
-  The long syntax with `target`, `published`, `protocol`, and `mode` gives you explicit control over port publishing behavior.
+  The `ports` section must be at the service level (not inside `deploy`) for
+  Docker Swarm stacks. The long syntax with `target`, `published`, `protocol`,
+  and `mode` gives you explicit control over port publishing behavior.
 </Aside>
 
 ### Architecture
 
 <div class="architecture-diagram">
-  <img src={approach1Arch.src} alt="Docker Swarm routing mesh distributing traffic across nodes" />
+  <img
+    src={approach1Arch.src}
+    alt="Docker Swarm routing mesh distributing traffic across nodes"
+  />
 </div>
 
 All three nodes participate in the routing mesh. External traffic hitting any node on port 80 is automatically routed to one of the webapp replicas via IPVS round-robin.
@@ -121,8 +125,13 @@ This approach works well for:
 However, for anything facing the public internet, you'll quickly need SSL certificates, domain-based routing, and the ability to run multiple services on ports 80/443. That's where Approach 2 comes in.
 
 <Aside type="caution">
-  The routing mesh masks client IPs via SNAT. If your application needs the real client IP (for logging, rate limiting, or geolocation), you must either use `mode: host` port publishing or place a reverse proxy in front.
-  The community project [docker-ingress-routing-daemon](https://github.com/newsnowlabs/docker-ingress-routing-daemon) can restore client IPs within the routing mesh, but it modifies kernel routing tables and requires careful testing.
+  The routing mesh masks client IPs via SNAT. If your application needs the real
+  client IP (for logging, rate limiting, or geolocation), you must either use
+  `mode: host` port publishing or place a reverse proxy in front. The community
+  project
+  [docker-ingress-routing-daemon](https://github.com/newsnowlabs/docker-ingress-routing-daemon)
+  can restore client IPs within the routing mesh, but it modifies kernel routing
+  tables and requires careful testing.
 </Aside>
 
 <EmbeddedWhitePaperCta />
@@ -135,9 +144,10 @@ Starting with version 3, Traefik has a [dedicated Swarm provider](https://doc.tr
 This approach gives you everything the routing mesh lacks: SSL termination with automatic Let's Encrypt certificates, host-based and path-based routing, HTTP-to-HTTPS redirects, and proper load balancing—all configured via labels on your services.
 
 <Aside type="caution">
-  If you're migrating from Traefik v2, the `providers.docker.swarmMode=true` flag has been removed entirely in v3.
-  You must use `providers.swarm` as a separate provider.
-  See the [migration guide](https://doc.traefik.io/traefik/migrate/v2-to-v3/) for details.
+  If you're migrating from Traefik v2, the `providers.docker.swarmMode=true`
+  flag has been removed entirely in v3. You must use `providers.swarm` as a
+  separate provider. See the [migration
+  guide](https://doc.traefik.io/traefik/migrate/v2-to-v3/) for details.
 </Aside>
 
 ### Implementation
@@ -174,7 +184,10 @@ Let's break down the key configuration decisions:
 ### Architecture
 
 <div class="architecture-diagram">
-  <img src={approach2Arch.src} alt="Traefik reverse proxy with SSL termination routing to Docker Swarm services" />
+  <img
+    src={approach2Arch.src}
+    alt="Traefik reverse proxy with SSL termination routing to Docker Swarm services"
+  />
 </div>
 
 Traefik terminates SSL, applies routing rules based on hostname and path, and forwards requests to the appropriate service replicas over the overlay network.
@@ -191,11 +204,11 @@ Traefik terminates SSL, applies routing rules based on hostname and path, and fo
 
 Let's Encrypt supports three [challenge types](https://doc.traefik.io/traefik/reference/install-configuration/tls/certificate-resolvers/acme/) for domain validation:
 
-| Challenge | Port Required | Supports Wildcards | Best For |
-| --------- | ------------- | ------------------- | -------- |
-| HTTP-01 | 80 | No | Most setups—simple and works out of the box |
-| TLS-ALPN-01 | 443 | No | Environments where port 80 is blocked |
-| DNS-01 | None | **Yes** | Wildcard certificates, private networks |
+| Challenge   | Port Required | Supports Wildcards | Best For                                    |
+| ----------- | ------------- | ------------------ | ------------------------------------------- |
+| HTTP-01     | 80            | No                 | Most setups—simple and works out of the box |
+| TLS-ALPN-01 | 443           | No                 | Environments where port 80 is blocked       |
+| DNS-01      | None          | **Yes**            | Wildcard certificates, private networks     |
 
 The HTTP challenge (used in Approach 2) is the simplest. If you need wildcard certificates (e.g., `*.example.com`), you'll need the DNS challenge—which is covered in Approach 3.
 
@@ -241,7 +254,10 @@ docker stack deploy -c docker-compose.yaml myapp
 ### Architecture
 
 <div class="architecture-diagram">
-  <img src={approach3Arch.src} alt="Enterprise Docker Swarm setup with Traefik, rate limiting, circuit breaking, and Prometheus monitoring" />
+  <img
+    src={approach3Arch.src}
+    alt="Enterprise Docker Swarm setup with Traefik, rate limiting, circuit breaking, and Prometheus monitoring"
+  />
 </div>
 
 Traffic flows through Traefik, which applies middleware (rate limiting, circuit breaking) before routing to application services. Prometheus scrapes metrics from Traefik and the application services, while Grafana provides visualization.
@@ -278,7 +294,7 @@ The label syntax mirrors the Caddyfile format:
 deploy:
   labels:
     caddy: app.example.com
-    caddy.reverse_proxy: "{{upstreams 8080}}"
+    caddy.reverse_proxy: '{{upstreams 8080}}'
 ```
 
 Caddy's strengths are its simplicity and built-in HTTP/3 support.
@@ -300,31 +316,31 @@ However, it was designed for single-host Docker setups and has [significant limi
 
 ### Comparison
 
-| Feature | Traefik | Caddy | HAProxy | Nginx PM |
-| ------- | ------- | ----- | ------- | -------- |
-| Swarm service discovery | Native provider | Plugin (labels) | DNS resolvers | Manual |
-| Automatic HTTPS | ACME built-in | Built-in (zero-config) | External tool | Built-in UI |
-| Rate limiting | Built-in middleware | No | ACL-based | No |
-| Circuit breaking | Built-in middleware | No | No | No |
-| Prometheus metrics | Built-in | Plugin | Built-in | No |
-| Dashboard | Built-in | No | Stats page | Full Web UI |
-| Multi-replica HA | Global mode + KV store | Controller/Server | Supported | No |
-| Maturity for Swarm | Most mature | Growing | Mature (manual config) | Not suited |
+| Feature                 | Traefik                | Caddy                  | HAProxy                | Nginx PM    |
+| ----------------------- | ---------------------- | ---------------------- | ---------------------- | ----------- |
+| Swarm service discovery | Native provider        | Plugin (labels)        | DNS resolvers          | Manual      |
+| Automatic HTTPS         | ACME built-in          | Built-in (zero-config) | External tool          | Built-in UI |
+| Rate limiting           | Built-in middleware    | No                     | ACL-based              | No          |
+| Circuit breaking        | Built-in middleware    | No                     | No                     | No          |
+| Prometheus metrics      | Built-in               | Plugin                 | Built-in               | No          |
+| Dashboard               | Built-in               | No                     | Stats page             | Full Web UI |
+| Multi-replica HA        | Global mode + KV store | Controller/Server      | Supported              | No          |
+| Maturity for Swarm      | Most mature            | Growing                | Mature (manual config) | Not suited  |
 
 ## Comparison Matrix
 
 &nbsp;
 
-| Feature | Built-in Routing Mesh | Traefik Reverse Proxy | Enterprise Stack |
-| ------- | --------------------- | --------------------- | ---------------- |
-| SSL Termination | None | Automatic (Let's Encrypt) | Wildcard + DNS challenge |
-| Routing | Port-based only (L4) | Host + Path (L7) | Host + Path + Middleware |
-| Client IP Preservation | No (SNAT) | Yes (host mode) | Yes (host mode) |
-| Rate Limiting | None | Manual (add middleware) | Built-in |
-| Circuit Breaking | None | Manual (add middleware) | Built-in |
-| Monitoring | None | Access logs | Prometheus + Grafana |
-| Additional Components | None | Traefik | Traefik + Prometheus + Grafana |
-| Complexity | Minimal | Moderate | High |
+| Feature                | Built-in Routing Mesh | Traefik Reverse Proxy     | Enterprise Stack               |
+| ---------------------- | --------------------- | ------------------------- | ------------------------------ |
+| SSL Termination        | None                  | Automatic (Let's Encrypt) | Wildcard + DNS challenge       |
+| Routing                | Port-based only (L4)  | Host + Path (L7)          | Host + Path + Middleware       |
+| Client IP Preservation | No (SNAT)             | Yes (host mode)           | Yes (host mode)                |
+| Rate Limiting          | None                  | Manual (add middleware)   | Built-in                       |
+| Circuit Breaking       | None                  | Manual (add middleware)   | Built-in                       |
+| Monitoring             | None                  | Access logs               | Prometheus + Grafana           |
+| Additional Components  | None                  | Traefik                   | Traefik + Prometheus + Grafana |
+| Complexity             | Minimal               | Moderate                  | High                           |
 
 ## Deploying with Distr
 
@@ -348,6 +364,7 @@ Its networking model—overlay networks, DNS-based service discovery, and the ro
 ## Resources
 
 ### Official Documentation
+
 - [Docker Swarm Mode Routing Mesh](https://docs.docker.com/engine/swarm/ingress/)
 - [Docker Swarm Networking](https://docs.docker.com/engine/swarm/networking/)
 - [Docker Secrets Management](https://docs.docker.com/engine/swarm/secrets/)
@@ -357,6 +374,7 @@ Its networking model—overlay networks, DNS-based service discovery, and the ro
 - [Traefik v2 to v3 Migration Guide](https://doc.traefik.io/traefik/migrate/v2-to-v3/)
 
 ### GitHub Repositories
+
 - [`traefik/traefik`](https://github.com/traefik/traefik) — Traefik reverse proxy
 - [`lucaslorentz/caddy-docker-proxy`](https://github.com/lucaslorentz/caddy-docker-proxy) — Caddy with Docker label support
 - [`newsnowlabs/docker-ingress-routing-daemon`](https://github.com/newsnowlabs/docker-ingress-routing-daemon) — Client IP preservation in routing mesh
@@ -365,6 +383,7 @@ Its networking model—overlay networks, DNS-based service discovery, and the ro
 - [`BretFisher/dogvscat`](https://github.com/BretFisher/dogvscat) — Advanced Swarm stack examples
 
 ### Community Guides
+
 - [Docker Swarm Rocks](https://dockerswarm.rocks/traefik/) — Production-tested Traefik + Swarm patterns
 - [Funky Penguin's Geek Cookbook](https://geek-cookbook.funkypenguin.co.nz/docker-swarm/traefik/) — Comprehensive Swarm deployment guides
 - [HAProxy on Docker Swarm](https://www.haproxy.com/blog/haproxy-on-docker-swarm-load-balancing-and-dns-service-discovery) — HAProxy DNS-based service discovery
