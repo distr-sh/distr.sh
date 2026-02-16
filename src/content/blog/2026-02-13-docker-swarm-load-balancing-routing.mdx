@@ -1,8 +1,8 @@
 ---
-title: 'Load Balancing and Routing in Docker Swarm: From Minimal Setup to Production'
-description: 'Learn how to set up load balancing, reverse proxying, and SSL termination in Docker Swarm. Covers three approaches: built-in routing mesh, Traefik with automatic HTTPS, and enterprise-grade setups with rate limiting and monitoring.'
-publishDate: 2026-02-13
-lastUpdated: 2026-02-13
+title: 'Load Balancing and Routing in Docker Swarm'
+description: 'Learn how to set up load balancing, reverse proxying, and SSL termination in Docker Swarm. Covers two approaches: built-in routing mesh and Traefik with automatic HTTPS, plus monitoring with Prometheus and Grafana.'
+publishDate: 2026-02-17
+lastUpdated: 2026-02-17
 slug: 'docker-swarm-load-balancing-routing'
 authors:
   - name: 'Philip Miglinci'
@@ -24,17 +24,15 @@ import {Aside, Code} from '@astrojs/starlight/components';
 import EmbeddedWhitePaperCta from '~/components/cta/embedded/EmbeddedWhitePaperCta.astro';
 import approach1Arch from '~/assets/blog/2026-02-13-docker-swarm-load-balancing-routing/approach-1-architecture.svg';
 import approach2Arch from '~/assets/blog/2026-02-13-docker-swarm-load-balancing-routing/approach-2-architecture.svg';
-import approach3Arch from '~/assets/blog/2026-02-13-docker-swarm-load-balancing-routing/approach-3-architecture.svg';
 import approach1Compose from './2026-02-13-docker-swarm-load-balancing-routing/approach-1/docker-compose.yaml?raw';
 import approach2Compose from './2026-02-13-docker-swarm-load-balancing-routing/approach-2/docker-compose.yaml?raw';
-import approach3Compose from './2026-02-13-docker-swarm-load-balancing-routing/approach-3/docker-compose.yaml?raw';
 
 I am Philip—an engineer working at Distr, which helps software and AI companies distribute their applications to self-managed environments.
 Our Open Source Software Distribution platform is available on GitHub ([`github.com/distr-sh/distr`](https://github.com/distr-sh/distr)) and supports orchestrating Docker Swarm clusters alongside Docker Compose deployments.
 
 [Docker Swarm](https://docs.docker.com/engine/swarm/) comes with a built-in load balancer, but production workloads quickly outgrow it.
 You need SSL certificates, host-based routing, path-based routing, rate limiting—none of which the built-in routing mesh provides.
-In this post, I'll walk through three approaches to routing and load balancing in Docker Swarm, progressing from the minimal built-in setup to a production-ready Traefik configuration and finally an enterprise-grade stack with monitoring and advanced middleware.
+In this post, I'll walk through two approaches to routing and load balancing in Docker Swarm: the minimal built-in setup and a production-ready Traefik configuration with automatic HTTPS, monitoring, and more.
 
 <hr />
 
@@ -84,7 +82,9 @@ These limitations are exactly why a reverse proxy like Traefik, Caddy, or Nginx 
 The simplest approach uses Docker Swarm's native ingress routing mesh with no additional components.
 Every published port is automatically load balanced across all replicas.
 
-### Implementation
+### Setting Up the Built-in Routing Mesh
+
+&nbsp;
 
 <Code code={approach1Compose} lang="yaml" title="docker-compose.yaml" />
 
@@ -95,7 +95,7 @@ docker stack deploy -c docker-compose.yaml myapp
 ```
 
 The `mode: ingress` setting (which is the default) tells Docker to use the routing mesh.
-Every node in the swarm will accept connections on ports 80 and 3000, forwarding them to available replicas.
+Every node in the swarm will accept connections on port 80, forwarding them to available replicas.
 
 <Aside type="note">
   The `ports` section must be at the service level (not inside `deploy`) for
@@ -103,7 +103,7 @@ Every node in the swarm will accept connections on ports 80 and 3000, forwarding
   and `mode` gives you explicit control over port publishing behavior.
 </Aside>
 
-### Architecture
+### Basic Docker Swarm Routing Mesh Architecture
 
 <div class="architecture-diagram">
   <img
@@ -114,7 +114,7 @@ Every node in the swarm will accept connections on ports 80 and 3000, forwarding
 
 All three nodes participate in the routing mesh. External traffic hitting any node on port 80 is automatically routed to one of the webapp replicas via IPVS round-robin.
 
-### When to Use This Approach
+### When to Use the Built-in Routing Mesh
 
 This approach works well for:
 
@@ -136,21 +136,14 @@ However, for anything facing the public internet, you'll quickly need SSL certif
 
 <EmbeddedWhitePaperCta />
 
-## Approach 2: Traefik as Reverse Proxy
+## Approach 2: Integrate Traefik with Docker Swarm
 
 [Traefik](https://traefik.io/traefik/) is the de facto reverse proxy for Docker Swarm.
 Starting with version 3, Traefik has a [dedicated Swarm provider](https://doc.traefik.io/traefik/reference/install-configuration/providers/swarm/) (separate from the Docker provider) that reads routing configuration from service labels in the `deploy` section.
 
 This approach gives you everything the routing mesh lacks: SSL termination with automatic Let's Encrypt certificates, host-based and path-based routing, HTTP-to-HTTPS redirects, and proper load balancing—all configured via labels on your services.
 
-<Aside type="caution">
-  If you're migrating from Traefik v2, the `providers.docker.swarmMode=true`
-  flag has been removed entirely in v3. You must use `providers.swarm` as a
-  separate provider. See the [migration
-  guide](https://doc.traefik.io/traefik/migrate/v2-to-v3/) for details.
-</Aside>
-
-### Implementation
+### Setting Up Traefik as a Docker Swarm Reverse Proxy
 
 <Code code={approach2Compose} lang="yaml" title="docker-compose.yaml" />
 
@@ -161,13 +154,13 @@ docker network create -d overlay --attachable traefik-public
 docker stack deploy -c docker-compose.yaml myapp
 ```
 
-### How It Works
+### How Traefik and Docker Swarm Service Discovery Works
 
 Let's break down the key configuration decisions:
 
 **Service discovery via labels.** Traefik watches the Docker API for services with `traefik.enable=true` labels and dynamically generates routing configuration. No config files to maintain—add a service, add labels, and Traefik picks it up.
 
-**Host and path routing.** The `rule` label defines how traffic is routed. `Host(`app.example.com`)` matches requests by hostname, while `PathPrefix(`/api`)` matches by URL path. You can combine rules with `&&` and `||` operators.
+**Host-based routing.** The `rule` label defines how traffic is routed. `Host(`app.example.com`)` matches requests by hostname. You can also use `PathPrefix(`/api`)` for path-based routing or combine rules with `&&` and `||` operators.
 
 **Automatic HTTPS.** The `certificatesresolvers.letsencrypt` configuration tells Traefik to obtain certificates from [Let's Encrypt](https://letsencrypt.org/) via the ACME protocol. The HTTP challenge validates domain ownership by responding to a challenge on port 80, then serves the certificate on port 443. Certificates are automatically renewed 30 days before expiration.
 
@@ -179,9 +172,7 @@ Let's break down the key configuration decisions:
   Docker Swarm does not provide port detection information to Traefik. You **must** specify the target port via `traefik.http.services.<name>.loadbalancer.server.port`. Without this label, Traefik will not know how to reach your service.
 </Aside>
 
-**Network separation.** Services that need to be routed by Traefik join the `traefik-public` overlay network. Internal communication (like database access) happens on the `app-internal` network, which Traefik cannot reach. This is a deliberate security boundary—your database is never exposed to the reverse proxy.
-
-### Architecture
+### Traefik with Docker Swarm Routing Architecture
 
 <div class="architecture-diagram">
   <img
@@ -190,9 +181,9 @@ Let's break down the key configuration decisions:
   />
 </div>
 
-Traefik terminates SSL, applies routing rules based on hostname and path, and forwards requests to the appropriate service replicas over the overlay network.
+Traefik terminates SSL, applies routing rules based on hostname, and forwards requests to the webapp replicas over the overlay network.
 
-### Best Practices
+### Traefik Configuration Best Practices
 
 - **Always set `exposedbydefault=false`** and explicitly opt-in services with `traefik.enable=true`. This prevents accidentally exposing internal services.
 - **Mount the Docker socket read-only.** Use `/var/run/docker.sock:/var/run/docker.sock:ro` to limit Traefik's access to the Docker API.
@@ -200,7 +191,7 @@ Traefik terminates SSL, applies routing rules based on hostname and path, and fo
 - **Store certificates on a persistent volume.** The `letsencrypt` volume ensures certificates survive container restarts. For multi-node setups, consider NFS or a distributed storage solution.
 - **Place labels in the `deploy` section.** In Swarm mode, Traefik reads labels from the service definition, not from individual containers.
 
-### SSL Certificate Challenge Types
+### SSL Certificate Challenge Types for Traefik ACME
 
 Let's Encrypt supports three [challenge types](https://doc.traefik.io/traefik/reference/install-configuration/tls/certificate-resolvers/acme/) for domain validation:
 
@@ -210,59 +201,11 @@ Let's Encrypt supports three [challenge types](https://doc.traefik.io/traefik/re
 | TLS-ALPN-01 | 443           | No                 | Environments where port 80 is blocked       |
 | DNS-01      | None          | **Yes**            | Wildcard certificates, private networks     |
 
-The HTTP challenge (used in Approach 2) is the simplest. If you need wildcard certificates (e.g., `*.example.com`), you'll need the DNS challenge—which is covered in Approach 3.
+The HTTP challenge (used above) is the simplest. If you need wildcard certificates (e.g., `*.example.com`), you'll need the DNS-01 challenge. Traefik supports [dozens of DNS providers](https://doc.traefik.io/traefik/https/acme/#providers) through the [Lego library](https://github.com/go-acme/lego).
 
-<EmbeddedWhitePaperCta />
+### Adding Prometheus and Grafana Monitoring to Traefik
 
-## Approach 3: Enterprise-Grade Setup
-
-Building on Approach 2, this configuration adds the features you need for production at scale: wildcard SSL certificates via DNS challenge, rate limiting, circuit breaking, and full observability with Prometheus and Grafana.
-
-### Implementation
-
-<Code code={approach3Compose} lang="yaml" title="docker-compose.yaml" />
-
-Deploy with:
-
-```bash
-# Create secrets
-echo "your-cloudflare-token" | docker secret create cf_api_token -
-# Generate htpasswd: htpasswd -nb admin your-password
-echo 'admin:$apr1$...' | docker secret create dashboard_users -
-echo "your-db-password" | docker secret create db_password -
-
-docker network create -d overlay --attachable traefik-public
-docker stack deploy -c docker-compose.yaml myapp
-```
-
-### What's Different From Approach 2
-
-**Wildcard SSL via DNS challenge.** Instead of the HTTP challenge, this setup uses the [DNS-01 challenge](https://doc.traefik.io/traefik/reference/install-configuration/tls/certificate-resolvers/acme/) with Cloudflare as the DNS provider. Traefik creates a temporary DNS TXT record to prove domain ownership, which means you can issue wildcard certificates (`*.example.com`) and you don't need port 80 accessible from the internet. Traefik supports [dozens of DNS providers](https://doc.traefik.io/traefik/https/acme/#providers) through the [Lego library](https://github.com/go-acme/lego).
-
-**Global mode deployment.** Traefik runs as a [global service](https://docs.docker.com/engine/swarm/services/#replicated-or-global-services)—one instance on every manager node. Combined with `mode: host` ports, this means every manager node can accept incoming traffic. Put a simple DNS round-robin or cloud load balancer in front of your manager nodes for high availability.
-
-**Rate limiting.** The [`ratelimit` middleware](https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/ratelimit/) applies a token bucket algorithm to incoming requests. In this example, the webapp allows 100 requests per second with bursts up to 200, while the API is capped at 50 req/s with 100 burst. Rate limiting is applied per-client-IP by default.
-
-**Circuit breaking.** The [`circuitbreaker` middleware](https://doc.traefik.io/traefik/middlewares/http/circuitbreaker/) protects services from cascading failures. When more than 25% of API responses are 5xx errors, the circuit breaker opens and returns a fallback response, giving the service time to recover. The circuit breaker transitions through three states: closed (normal), open (blocking requests), and recovering (progressively sending traffic).
-
-**Prometheus metrics.** Traefik exposes a `/metrics` endpoint that Prometheus scrapes. This gives you request counts, latency histograms, and error rates per router, service, and entrypoint. Grafana provides dashboards for visualization.
-
-**Dashboard with authentication.** The Traefik dashboard is exposed at `traefik.example.com` behind basic auth, loaded from a [Docker secret](https://docs.docker.com/engine/swarm/secrets/). This avoids storing credentials in labels (which are visible via the Docker API).
-
-**Docker secrets throughout.** All sensitive configuration—Cloudflare API token, dashboard credentials, database password—uses Docker secrets. Secrets are encrypted at rest in the Raft log, encrypted in transit via mutual TLS, and mounted as in-memory files at `/run/secrets/`.
-
-### Architecture
-
-<div class="architecture-diagram">
-  <img
-    src={approach3Arch.src}
-    alt="Enterprise Docker Swarm setup with Traefik, rate limiting, circuit breaking, and Prometheus monitoring"
-  />
-</div>
-
-Traffic flows through Traefik, which applies middleware (rate limiting, circuit breaking) before routing to application services. Prometheus scrapes metrics from Traefik and the application services, while Grafana provides visualization.
-
-### Monitoring Stack
+Traefik can expose a `/metrics` endpoint for [Prometheus](https://prometheus.io/) by enabling the metrics entrypoint. This gives you request counts, latency histograms, and error rates per router, service, and entrypoint. [Grafana](https://grafana.com/) provides dashboards for visualization.
 
 The Prometheus configuration for scraping Traefik metrics is straightforward:
 
@@ -281,11 +224,13 @@ The `tasks.traefik` DNS name resolves to all Traefik task IPs in the swarm, so P
 
 For a complete monitoring stack example including pre-built Grafana dashboards, see [vegasbrianc/docker-traefik-prometheus](https://github.com/vegasbrianc/docker-traefik-prometheus).
 
+<EmbeddedWhitePaperCta />
+
 ## Alternatives to Traefik
 
 While Traefik is the most mature reverse proxy for Docker Swarm, there are alternatives worth considering:
 
-### Caddy
+### Caddy as a Docker Swarm Reverse Proxy
 
 [Caddy](https://caddyserver.com/) with the [caddy-docker-proxy](https://github.com/lucaslorentz/caddy-docker-proxy) plugin provides automatic HTTPS out of the box with no configuration needed—certificates are issued from Let's Encrypt and ZeroSSL automatically.
 The label syntax mirrors the Caddyfile format:
@@ -301,7 +246,7 @@ Caddy's strengths are its simplicity and built-in HTTP/3 support.
 For high availability, it offers a controller/server architecture where a single controller instance monitors Docker and pushes configuration to multiple server instances.
 However, its Swarm integration is less mature than Traefik's, and there are [known issues](https://github.com/lucaslorentz/caddy-docker-proxy/issues/721) with service discovery on worker nodes.
 
-### HAProxy
+### HAProxy with Docker Swarm DNS Service Discovery
 
 [HAProxy](https://www.haproxy.com/) uses Docker Swarm's internal DNS for service discovery via `server-template` directives and DNS resolvers.
 It offers the best raw performance and the most advanced load balancing algorithms (least-connections, source-hash, URI-hash), but lacks automatic service discovery via labels—you must update configuration files when services change.
@@ -309,12 +254,12 @@ There's also no built-in Let's Encrypt integration; you'll need to pair it with 
 
 See the [HAProxy on Docker Swarm guide](https://www.haproxy.com/blog/haproxy-on-docker-swarm-load-balancing-and-dns-service-discovery) for details.
 
-### Nginx Proxy Manager
+### Nginx Proxy Manager in Docker Swarm
 
 [Nginx Proxy Manager](https://nginxproxymanager.com/) provides a web-based GUI for managing proxy hosts and SSL certificates.
 However, it was designed for single-host Docker setups and has [significant limitations in Swarm mode](https://github.com/NginxProxyManager/nginx-proxy-manager/issues/4387): it doesn't support multiple replicas, has no native Swarm service discovery, and can return 502 errors when proxying to service names on overlay networks.
 
-### Comparison
+### Docker Swarm Reverse Proxy Feature Comparison
 
 | Feature                 | Traefik                | Caddy                  | HAProxy                | Nginx PM    |
 | ----------------------- | ---------------------- | ---------------------- | ---------------------- | ----------- |
@@ -331,16 +276,16 @@ However, it was designed for single-host Docker setups and has [significant limi
 
 &nbsp;
 
-| Feature                | Built-in Routing Mesh | Traefik Reverse Proxy     | Enterprise Stack               |
-| ---------------------- | --------------------- | ------------------------- | ------------------------------ |
-| SSL Termination        | None                  | Automatic (Let's Encrypt) | Wildcard + DNS challenge       |
-| Routing                | Port-based only (L4)  | Host + Path (L7)          | Host + Path + Middleware       |
-| Client IP Preservation | No (SNAT)             | Yes (host mode)           | Yes (host mode)                |
-| Rate Limiting          | None                  | Manual (add middleware)   | Built-in                       |
-| Circuit Breaking       | None                  | Manual (add middleware)   | Built-in                       |
-| Monitoring             | None                  | Access logs               | Prometheus + Grafana           |
-| Additional Components  | None                  | Traefik                   | Traefik + Prometheus + Grafana |
-| Complexity             | Minimal               | Moderate                  | High                           |
+| Feature                | Built-in Routing Mesh | Traefik Reverse Proxy              |
+| ---------------------- | --------------------- | ---------------------------------- |
+| SSL Termination        | None                  | Automatic (Let's Encrypt)          |
+| Routing                | Port-based only (L4)  | Host + Path (L7)                   |
+| Client IP Preservation | No (SNAT)             | Yes (host mode)                    |
+| Rate Limiting          | None                  | Available via middleware           |
+| Circuit Breaking       | None                  | Available via middleware           |
+| Monitoring             | None                  | Prometheus + Grafana               |
+| Additional Components  | None                  | Traefik (+ Prometheus for metrics) |
+| Complexity             | Minimal               | Moderate                           |
 
 ## Deploying with Distr
 
@@ -352,11 +297,9 @@ This means your customers get a consistent deployment experience regardless of w
 
 Docker Swarm's built-in routing mesh is a great starting point—it requires zero configuration and provides basic load balancing out of the box. But as soon as you need SSL, domain-based routing, or any Layer 7 feature, you need a reverse proxy.
 
-**Choose Approach 1 (Built-in Routing Mesh)** for internal services, development environments, or applications that handle their own SSL termination. It's the simplest setup with no additional components.
+**Choose the built-in routing mesh** for internal services, development environments, or applications that handle their own SSL termination. It's the simplest setup with no additional components.
 
-**Choose Approach 2 (Traefik Reverse Proxy)** for most production deployments. Automatic HTTPS via Let's Encrypt, host and path-based routing, and label-based configuration make this the sweet spot between simplicity and functionality. This is what I use for the majority of Swarm deployments.
-
-**Choose Approach 3 (Enterprise Stack)** when you need defense-in-depth: rate limiting to protect against abuse, circuit breaking to prevent cascading failures, wildcard certificates for multi-tenant setups, and full observability with Prometheus and Grafana. The added complexity is justified when reliability and operational visibility are critical.
+**Choose Traefik** for most production deployments. Automatic HTTPS via Let's Encrypt, host and path-based routing, label-based configuration, and optional monitoring with Prometheus and Grafana make it the sweet spot between simplicity and functionality. This is what I use for the majority of Swarm deployments.
 
 Regardless of which approach you choose, Docker Swarm provides a solid foundation for production workloads.
 Its networking model—overlay networks, DNS-based service discovery, and the routing mesh—handles the hard parts of distributed networking, letting you focus on your application logic.

@@ -2,12 +2,9 @@ networks:
   traefik-public:
     driver: overlay
     attachable: true
-  app-internal:
-    driver: overlay
 
 volumes:
   letsencrypt:
-  db-data:
 
 services:
   traefik:
@@ -47,7 +44,6 @@ services:
     image: myapp:latest
     networks:
       - traefik-public
-      - app-internal
     deploy:
       replicas: 3
       labels:
@@ -56,34 +52,3 @@ services:
         - 'traefik.http.routers.webapp.entrypoints=websecure'
         - 'traefik.http.routers.webapp.tls.certresolver=letsencrypt'
         - 'traefik.http.services.webapp.loadbalancer.server.port=8080'
-
-  api:
-    image: myapi:latest
-    networks:
-      - traefik-public
-      - app-internal
-    deploy:
-      replicas: 2
-      labels:
-        - 'traefik.enable=true'
-        - 'traefik.http.routers.api.rule=Host(`app.example.com`) && PathPrefix(`/api`)'
-        - 'traefik.http.routers.api.entrypoints=websecure'
-        - 'traefik.http.routers.api.tls.certresolver=letsencrypt'
-        - 'traefik.http.services.api.loadbalancer.server.port=3000'
-
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_DB: myapp
-      POSTGRES_USER: myapp
-      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
-    volumes:
-      - db-data:/var/lib/postgresql/data
-    networks:
-      - app-internal
-    secrets:
-      - db_password
-
-secrets:
-  db_password:
-    external: true
