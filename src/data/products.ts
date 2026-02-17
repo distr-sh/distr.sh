@@ -44,7 +44,7 @@ export const products: Product[] = [
   {
     title: 'Compatibility Matrix',
     description:
-      'In Development - Automatically test, if your Application is compatible across a matrix of possible deployment environments',
+      'New - Automatically test, if your Application is compatible across a matrix of possible deployment environments',
     value: 'check-circle',
     href: '/docs/guides/kubernetes-compatibility-matrix/',
   },
