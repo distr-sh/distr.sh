@@ -29,6 +29,7 @@ services:
       - '--metrics.prometheus.buckets=0.1,0.3,1.2,5.0'
       - '--accesslog=true'
       - '--log.level=INFO'
+      - '--api.dashboard=true'
     environment:
       - CF_API_EMAIL=admin@example.com
       - CF_DNS_API_TOKEN_FILE=/run/secrets/cf_api_token
@@ -47,6 +48,7 @@ services:
       - monitoring
     secrets:
       - cf_api_token
+      - dashboard_users
     deploy:
       mode: global
       placement:
@@ -89,6 +91,8 @@ services:
     networks:
       - monitoring
       - traefik-public
+    secrets:
+      - dashboard_users
     deploy:
       replicas: 1
       placement:
@@ -99,6 +103,8 @@ services:
         - 'traefik.http.routers.prometheus.rule=Host(`prometheus.example.com`)'
         - 'traefik.http.routers.prometheus.entrypoints=websecure'
         - 'traefik.http.routers.prometheus.tls.certresolver=letsencrypt'
+        - 'traefik.http.routers.prometheus.middlewares=prometheus-auth'
+        - 'traefik.http.middlewares.prometheus-auth.basicauth.usersfile=/run/secrets/dashboard_users'
         - 'traefik.http.services.prometheus.loadbalancer.server.port=9090'
 
   grafana:
@@ -108,6 +114,8 @@ services:
     networks:
       - monitoring
       - traefik-public
+    secrets:
+      - dashboard_users
     deploy:
       replicas: 1
       labels:
@@ -115,6 +123,8 @@ services:
         - 'traefik.http.routers.grafana.rule=Host(`grafana.example.com`)'
         - 'traefik.http.routers.grafana.entrypoints=websecure'
         - 'traefik.http.routers.grafana.tls.certresolver=letsencrypt'
+        - 'traefik.http.routers.grafana.middlewares=grafana-auth'
+        - 'traefik.http.middlewares.grafana-auth.basicauth.usersfile=/run/secrets/dashboard_users'
         - 'traefik.http.services.grafana.loadbalancer.server.port=3000'
 
 configs:
