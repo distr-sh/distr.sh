@@ -1,0 +1,348 @@
+---
+title: Kubernetes Compatibility Matrix
+description: Validate your Helm charts against multiple Kubernetes versions in CI/CD, generate compatibility reports, and share them with customers as version resources using the Distr GitHub Action.
+slug: docs/guides/kubernetes-compatibility-matrix
+sidebar:
+  order: 8
+---
+
+When you distribute a Kubernetes application to enterprise customers, you rarely control which Kubernetes version they run. A single cluster fleet can span three or four minor versions at once, and every Kubernetes release deprecates or removes APIs. A Helm chart that installs cleanly on 1.33 might fail on 1.35 because a beta API it relies on has graduated or been removed — and the first person to discover that is usually a customer filing a support ticket.
+
+A **compatibility matrix** solves this by systematically validating your Helm chart against every Kubernetes version you claim to support, on every release, as part of your CI/CD pipeline. Instead of manually maintaining test clusters or relying on customer reports, you get an automated, versioned record of exactly which Kubernetes versions your application is compatible with.
+
+The benefits compound as your customer base grows:
+
+- **Catch breaking changes before customers do.** Kubernetes deprecates and removes APIs on a predictable schedule. Automated validation flags issues the moment they appear in your chart, not after a customer upgrade fails.
+- **Reduce support burden.** When every release ships with a tested compatibility matrix, your support team can immediately confirm whether a reported issue is a known incompatibility or something else entirely.
+- **Build customer confidence.** Sharing a compatibility report alongside each version lets customers verify support for their environment before upgrading — no guesswork, no back-and-forth.
+- **Eliminate dedicated test infrastructure.** Schema-based validation against Kubernetes OpenAPI specs runs in seconds on a CI runner. There are no clusters to provision, no cloud bills to manage, and no teardown to worry about.
+- **Scale across versions effortlessly.** Adding a new Kubernetes version to your matrix is a one-line change. GitHub Actions runs them all in parallel, so validation time stays constant regardless of how many versions you test.
+
+In this guide, you'll set up a complete compatibility testing pipeline that validates your Helm chart across multiple Kubernetes versions and publishes the results as a version resource in Distr — visible to your customers in their portal.
+
+By the end of this guide, you'll have:
+
+- A GitHub Actions workflow that validates your Helm chart across multiple Kubernetes versions in parallel
+- A unified compatibility matrix report generated from the per-version validation results
+- Automated attachment of the compatibility report as a version resource visible to customers in Distr
+
+## Prerequisites for Kubernetes Compatibility Testing
+
+Before starting, ensure you have:
+
+1. A Distr account with an organization set up
+2. A Helm application configured in Distr (see [Create Application](/docs/guides/application/))
+3. A GitHub repository containing your Helm chart
+4. The [Automatic Deployments from GitHub](/docs/guides/automatic-deployments-from-github/) workflow already configured — this guide extends that pipeline with a compatibility validation stage
+5. Familiarity with [GitHub Actions matrix strategies](https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs)
+
+## Step 1: Set Up the GitHub Actions Workflow for Kubernetes Version Matrix Testing
+
+The workflow has three jobs that run in sequence: validate the chart across a matrix of Kubernetes versions, merge the results into a unified report, and create the Distr application version with the report attached as a version resource.
+
+Add the following jobs to your existing workflow (e.g., `.github/workflows/push-distr.yaml`), or create a new workflow file:
+
+```yaml
+name: Compatibility Matrix and Distr Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  validate-chart:
+    name: Validate Helm chart against Kubernetes ${{ matrix.kubernetes-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        kubernetes-version: ['1.32.0', '1.33.0', '1.34.0', '1.35.0']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Helm for chart rendering
+        uses: azure/setup-helm@v4
+      - name: Build Helm chart dependencies
+        run: helm dependency build deploy/charts/your-app
+      - name: Validate chart with kubeconform against Kubernetes ${{ matrix.kubernetes-version }}
+        run: ./deploy/scripts/distr-compatibility-matrix.sh ${{ matrix.kubernetes-version }}
+      - name: Write per-version validation results to job summary
+        if: always()
+        run: cat "compatibility-matrix-${{ matrix.kubernetes-version }}.md" >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload per-version compatibility report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compatibility-matrix-${{ matrix.kubernetes-version }}
+          path: |
+            compatibility-matrix-${{ matrix.kubernetes-version }}.md
+            kubeconform-${{ matrix.kubernetes-version }}.json
+
+  compatibility-matrix-report:
+    name: Generate unified Kubernetes compatibility matrix report
+    needs: validate-chart
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Download all per-version compatibility reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: compatibility-matrix-*
+          path: reports
+          merge-multiple: true
+      - name: Merge per-version reports into unified compatibility matrix
+        run: ./deploy/scripts/distr-compatibility-matrix-merge-reports.sh reports
+      - name: Write unified compatibility matrix to job summary
+        run: cat compatibility-matrix.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload unified compatibility matrix report
+        uses: actions/upload-artifact@v4
+        with:
+          name: compatibility-matrix-report
+          path: compatibility-matrix.md
+
+  push-to-distr:
+    name: Create Distr Version with Kubernetes Compatibility Report
+    needs: compatibility-matrix-report
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Download compatibility matrix report
+        uses: actions/download-artifact@v4
+        with:
+          name: compatibility-matrix-report
+      - name: Create Distr Version and attach compatibility report
+        uses: distr-sh/distr-create-version-action@v1
+        with:
+          api-token: ${{ secrets.DISTR_API_TOKEN }}
+          application-id: ${{ vars.DISTR_APPLICATION_ID }}
+          version-name: ${{ github.ref_name }}
+          chart-type: 'oci'
+          chart-url: oci://ghcr.io/yourorg/your-chart
+          chart-version: ${{ github.ref_name }}
+          base-values-file: ${{ github.workspace }}/base-values.yaml
+          update-deployments: true
+          resources: |
+            [
+              {
+                "name": "Kubernetes Compatibility Matrix",
+                "path": "${{ github.workspace }}/compatibility-matrix.md",
+                "visibleToCustomers": true
+              }
+            ]
+```
+
+Key points about each job:
+
+- **validate-chart** uses `fail-fast: false` so all Kubernetes versions are tested even if one fails. Each matrix job produces per-version markdown and JSON artifacts.
+- **compatibility-matrix-report** uses `merge-multiple: true` when downloading artifacts to combine all per-version results into a single directory, then runs the merge script.
+- **push-to-distr** downloads the unified report and passes it to the `distr-create-version-action` via the `resources` input, which attaches it as a customer-visible version resource.
+
+### Attaching Compatibility Reports as Version Resources in the GitHub Action
+
+The `resources` input accepts a JSON array where each entry has:
+
+| Field                | Type    | Required | Default | Description                                            |
+| -------------------- | ------- | -------- | ------- | ------------------------------------------------------ |
+| `name`               | string  | yes      |         | Display name of the resource                           |
+| `content`            | string  | no\*     |         | Inline markdown content                                |
+| `path`               | string  | no\*     |         | Path to a file on the runner to read content from      |
+| `visibleToCustomers` | boolean | no       | `true`  | Whether the resource is visible in the customer portal |
+
+\* Exactly one of `content` or `path` must be provided per resource.
+
+You can attach multiple resources — for example, a customer-visible compatibility report and an internal-only set of release notes:
+
+```yaml
+resources: |
+  [
+    {
+      "name": "Kubernetes Compatibility Matrix",
+      "path": "${{ github.workspace }}/compatibility-matrix.md",
+      "visibleToCustomers": true
+    },
+    {
+      "name": "Internal Release Notes",
+      "content": "# Internal Notes\n\nKnown issue: ...",
+      "visibleToCustomers": false
+    }
+  ]
+```
+
+## Understanding Version Resources in Distr
+
+Version resources are supplementary markdown content items attached to application versions. They appear alongside the version details in both the vendor and customer portals.
+
+The `visibleToCustomers` flag controls visibility:
+
+- When `true`, the resource appears in the customer portal — useful for compatibility matrices, release notes, and getting-started guides
+- When `false`, the resource is only visible to vendor team members — useful for internal notes, known issues, or deployment checklists
+
+For teams that need to create versions programmatically outside of GitHub Actions, the Distr SDK supports version resources directly:
+
+```typescript
+import {DistrService} from '@distr-sh/distr-sdk';
+
+const distr = new DistrService({
+  apiKey: process.env.DISTR_API_TOKEN,
+});
+
+await distr.createKubernetesApplicationVersion(appId, '1.5.0', {
+  chartType: 'oci',
+  chartUrl: 'oci://ghcr.io/yourorg/your-chart',
+  chartVersion: '1.5.0',
+  resources: [
+    {
+      name: 'Kubernetes Compatibility Matrix',
+      content: compatibilityMatrixMarkdown,
+      visibleToCustomers: true,
+    },
+    {
+      name: 'Internal Release Notes',
+      content: '# Internal Notes\n\nThis version includes...',
+      visibleToCustomers: false,
+    },
+  ],
+});
+```
+
+See the [Distr SDK](/docs/integrations/sdk/) documentation for more details.
+
+## Step 2: Customize the Kubernetes Version Matrix for Your Chart
+
+### Choosing which Kubernetes Versions to Validate Against
+
+Kubernetes has roughly three releases per year, with each minor version supported for approximately 14 months. A good starting point is to test against the 4 most recent minor releases:
+
+```bash
+ALL_VERSIONS=("1.32.0" "1.33.0" "1.34.0" "1.35.0")
+```
+
+Update this list as new Kubernetes versions are released. If your customers run specific versions, add those to the list.
+
+### Handling Custom Resource Definitions (CRDs) in kubeconform Validation
+
+If your chart includes CRDs that don't have public schemas, kubeconform will report errors. You can skip specific kinds:
+
+```bash
+helm template my-release "$CHART_DIR" --kube-version "$version" 2>/dev/null | \
+  run_kubeconform \
+    -kubernetes-version "$version" \
+    -strict \
+    -summary \
+    -verbose \
+    -output json \
+    -schema-location default \
+    -schema-location "$SCHEMA_LOCATION" \
+    -skip CustomResourceDefinition,MyCRD
+```
+
+The `-schema-location` for the [CRDs-catalog](https://github.com/datreeio/CRDs-catalog) already provides schemas for many popular CRDs (cert-manager, Prometheus, Istio, etc.).
+
+### Controlling Kubeconform Validation Strictness
+
+The `-strict` flag causes kubeconform to reject manifests with unknown fields. If your chart includes non-standard annotations or vendor-specific fields, you can remove `-strict` for more lenient validation. Review your requirements to decide which mode is appropriate.
+
+## Step 3: Test the Kubernetes Compatibility Pipeline Locally
+
+Before pushing to CI, test the scripts locally.
+
+Run validation against a single Kubernetes version:
+
+```bash
+./deploy/scripts/distr-compatibility-matrix.sh 1.34.0
+```
+
+This produces `kubeconform-1.34.0.json` and `compatibility-matrix-1.34.0.md`.
+
+Run validation against all configured versions and generate the unified report:
+
+```bash
+./deploy/scripts/distr-compatibility-matrix.sh
+```
+
+This produces per-version artifacts and a unified `compatibility-matrix.md`. Review the report to make sure the output matches your expectations before committing.
+
+## Example Kubernetes Compatibility Pipeline from hello-distr
+
+The [hello-distr](https://github.com/distr-sh/hello-distr) repository provides a complete working example of this setup.
+
+File layout:
+
+```
+hello-distr/
+  .github/workflows/
+    hello-distr.yaml                                  # Workflow with validate-chart + report jobs
+  deploy/
+    charts/hello-distr/                               # The Helm chart
+    scripts/
+      distr-compatibility-matrix.sh                   # Per-version validation
+      distr-compatibility-matrix-merge-reports.sh     # Report merging
+      distr-compatibility-matrix-selftest.sh          # kubeconform self-tests
+```
+
+The hello-distr implementation:
+
+- Tests against Kubernetes 1.32.0, 1.33.0, 1.34.0, and 1.35.0
+- Uses `fail-fast: false` so all versions are always tested
+- Writes per-version reports to the GitHub Actions job summary for easy review
+- Merges results into a unified `compatibility-matrix.md`
+- Includes a self-test script that verifies kubeconform correctly detects version-specific resources (e.g., the `Workload` kind introduced in Kubernetes 1.35)
+
+You can fork or copy from the hello-distr repository to get started quickly, then customize the scripts and workflow for your own chart.
+
+## Troubleshooting Kubernetes Compatibility Validation
+
+### Helm Template Rendering Fails for Specific Kubernetes Versions
+
+**Problem:** `helm template` fails with errors about unknown API versions when targeting newer or older Kubernetes versions.
+
+**Solution:** Check that your chart's `apiVersion` fields are compatible with the target versions. Use `Capabilities.KubeVersion` in your Helm templates to conditionally select API versions. Ensure the `kubeVersion` constraint in `Chart.yaml` covers your target range.
+
+### kubeconform Reports Missing Schemas for Custom Resources
+
+**Problem:** Validation fails with "no schema found" for CRDs.
+
+**Solution:** Use the `-skip` flag to exclude CRD kinds, or provide custom schemas via the `-schema-location` flag. The CRDs-catalog schema location included in the scripts covers many popular CRDs. For custom CRDs, you can host your own schema files and add another `-schema-location` entry.
+
+### Artifact Upload Fails in Kubernetes Version Matrix Jobs
+
+**Problem:** The `actions/upload-artifact` step fails with conflicts when multiple matrix jobs write to the same artifact name.
+
+**Solution:** Ensure each matrix job uses a unique artifact name that includes the Kubernetes version: `name: compatibility-matrix-${{ matrix.kubernetes-version }}`. Use `merge-multiple: true` in the download step.
+
+### Compatibility Matrix Report Shows Unexpected Validation Failures
+
+**Problem:** Resources that should pass are showing as failed in the matrix.
+
+**Solution:** Verify that kubeconform has the correct schema version. Strict mode (`-strict`) will fail on unknown fields — consider removing it for charts that include non-standard annotations. Check the detailed per-version reports in the GitHub Actions artifacts for specific error messages.
+
+### Version Resource Not Visible in the Customer Portal
+
+**Problem:** The compatibility report was attached but customers cannot see it.
+
+**Solution:** Verify that `visibleToCustomers` is set to `true` in the `resources` JSON. Check the workflow logs to confirm the resource was included in the version creation request.
+
+## Next Steps After Setting Up Kubernetes Compatibility Testing
+
+- **[Automatic Deployments from GitHub](/docs/guides/automatic-deployments-from-github/)** — If you haven't already, set up automatic version creation and deployment updates
+- **[Application Licenses](/docs/guides/application-licenses/)** — Control which customers can access specific application versions and their compatibility reports
+- **[Configuring Helm Charts for Distr](/docs/guides/helm-chart-registry-auth/)** — Set up authenticated image pulls with imagePullSecrets
+- **[Distr SDK](/docs/integrations/sdk/)** — Build custom automation for generating and attaching compatibility reports programmatically
+
+## Additional Resources for Kubernetes Compatibility Testing
+
+- [hello-distr Example Application](https://github.com/distr-sh/hello-distr) — Complete working example with compatibility matrix scripts and workflow
+- [distr-create-version-action GitHub Repository](https://github.com/distr-sh/distr-create-version-action) — GitHub Action documentation including the resources input
+- [kubeconform](https://github.com/yannh/kubeconform) — Kubernetes manifest validation tool
+- [CRDs-catalog](https://github.com/datreeio/CRDs-catalog) — Community-maintained catalog of CRD schemas for kubeconform
+- [Kubernetes Version Skew Policy](https://kubernetes.io/releases/version-skew-policy/) — Official Kubernetes version support policy
+- [GitHub Actions Matrix Strategy](https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs) — Matrix build documentation
+- [Distr Discord Community](https://discord.gg/6qqBSAWZfW)
+
+---
+
+Have questions? Join our [Discord community](https://discord.gg/6qqBSAWZfW) or check out the [FAQs](/docs/faqs/).
