@@ -6,6 +6,18 @@ sidebar:
   order: 8
 ---
 
+import ThemedImage from '~/components/util/ThemedImage.astro';
+import compatibilityMatrixReportLight from '~/assets/docs/guides/automation/distr-compatibilty-matrix-report-light.png';
+import compatibilityMatrixReportDark from '~/assets/docs/guides/automation/distr-compatibilty-matrix-report-dark.png';
+import compatibilityMatrixGithubAction from '~/assets/docs/guides/automation/distr-compatibility-matrix-github-action.png';
+import {Image} from 'astro:assets';
+
+<ThemedImage
+  lightSrc={compatibilityMatrixReportLight}
+  darkSrc={compatibilityMatrixReportDark}
+  alt="Compatibility matrix report in the Distr vendor portal"
+/>
+
 When you distribute a Kubernetes application to enterprise customers, you rarely control which Kubernetes version they run. A single cluster fleet can span three or four minor versions at once, and every Kubernetes release deprecates or removes APIs. A Helm chart that installs cleanly on 1.33 might fail on 1.35 because a beta API it relies on has graduated or been removed — and the first person to discover that is usually a customer filing a support ticket.
 
 A **compatibility matrix** solves this by systematically validating your Helm chart against every Kubernetes version you claim to support, on every release, as part of your CI/CD pipeline. Instead of manually maintaining test clusters or relying on customer reports, you get an automated, versioned record of exactly which Kubernetes versions your application is compatible with.
@@ -35,6 +47,9 @@ Before starting, ensure you have:
 3. A GitHub repository containing your Helm chart
 4. The [Automatic Deployments from GitHub](/docs/guides/automatic-deployments-from-github/) workflow already configured — this guide extends that pipeline with a compatibility validation stage
 5. Familiarity with [GitHub Actions matrix strategies](https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs)
+
+<Image src={compatibilityMatrixGithubAction} alt="Compatibility matrix GitHub Actions workflow" />
+
 
 ## Step 1: Set Up the GitHub Actions Workflow for Kubernetes Version Matrix Testing
 
@@ -134,6 +149,7 @@ jobs:
               }
             ]
 ```
+
 
 Key points about each job:
 
