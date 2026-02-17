@@ -49,9 +49,9 @@ export const products: Product[] = [
     href: '/docs/guides/kubernetes-compatibility-matrix/',
   },
   {
-    title: 'Pre Flight Checks',
+    title: 'Pre-flight Checks',
     description:
-      'In Development - Determine if needed resources are available or execute custom pre and post installation scripts',
+      'New - Determine if needed resources are available or execute custom pre and post installation scripts',
     value: 'clipboard-check',
     href: '/docs/guides/preflight-checks/',
   },
