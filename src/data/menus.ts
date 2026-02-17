@@ -67,12 +67,6 @@ export const resourcesMenu: MenuItem[] = [
     href: '/case-studies/',
   },
   {
-    title: 'Glossary',
-    description: 'Understand key terms and concepts in software distribution',
-    value: 'book-text',
-    href: '/glossary/',
-  },
-  {
     title: 'White Paper',
     description:
       'Deep dive into the building blocks of modern software distribution',
