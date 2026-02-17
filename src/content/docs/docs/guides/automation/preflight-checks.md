@@ -171,7 +171,7 @@ fi
 
 # --- CPU check ---
 REQUIRED_CORES=2
-AVAILABLE_CORES=$(nproc 2>/dev/null || echo 0)
+AVAILABLE_CORES=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 0)
 if [ "$AVAILABLE_CORES" -lt "$REQUIRED_CORES" ]; then
   echo "FAIL: Only $AVAILABLE_CORES CPU core(s), need at least $REQUIRED_CORES."
   ERRORS=$((ERRORS + 1))
@@ -221,7 +221,7 @@ When writing custom pre-flight check scripts, follow these conventions:
 
 - **Exit with a non-zero status** on failure — this signals Distr to abort the deployment.
 - **Print clear messages** prefixed with `FAIL:` or `OK:` so customers understand what went wrong.
-- **Keep scripts idempotent** — they should only read system state, never modify it.
+- **Keep scripts idempotent and safe** — if they install or update software or otherwise change system state, they must be safe to run multiple times and avoid destructive side effects.
 - **Test on the target OS** — Linux distributions may differ in available commands (e.g., `nproc` vs `sysctl`). Include fallbacks where possible.
 - **Set reasonable thresholds** — document your minimums and explain why they are required.
 
