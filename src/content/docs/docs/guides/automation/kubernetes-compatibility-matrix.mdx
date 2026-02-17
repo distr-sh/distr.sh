@@ -48,8 +48,10 @@ Before starting, ensure you have:
 4. The [Automatic Deployments from GitHub](/docs/guides/automatic-deployments-from-github/) workflow already configured — this guide extends that pipeline with a compatibility validation stage
 5. Familiarity with [GitHub Actions matrix strategies](https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs)
 
-<Image src={compatibilityMatrixGithubAction} alt="Compatibility matrix GitHub Actions workflow" />
-
+<Image
+  src={compatibilityMatrixGithubAction}
+  alt="Compatibility matrix GitHub Actions workflow"
+/>
 
 ## Step 1: Set Up the GitHub Actions Workflow for Kubernetes Version Matrix Testing
 
@@ -149,7 +151,6 @@ jobs:
               }
             ]
 ```
-
 
 Key points about each job:
 
