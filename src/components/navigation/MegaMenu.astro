@@ -93,7 +93,8 @@ const menuWidth = numericWidth * columns + gap * (columns - 1) + padding;
 
       // Function to parse and render description with badge
       const renderDescription = (description: string) => {
-        const badgeRegex = /^(In Development|Enterprise|Beta|Alpha)\s*-\s*/i;
+        const badgeRegex =
+          /^(New|In Development|Enterprise|Beta|Alpha)\s*-\s*/i;
         const match = description.match(badgeRegex);
 
         // Clear existing content
@@ -388,7 +389,7 @@ const menuWidth = numericWidth * columns + gap * (columns - 1) + padding;
     border: 1px solid rgba(168, 85, 247, 0.3);
   }
 
-  :root[data-theme='light'] .menu-description :global(.menu-badge-beta) {
+  :root[data-theme='light'] .menu-description :global(.menu-badge-new) {
     background-color: rgba(234, 179, 8, 0.1);
     color: rgb(161, 98, 7);
     border: 1px solid rgba(234, 179, 8, 0.3);
