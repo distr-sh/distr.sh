@@ -44,16 +44,16 @@ export const products: Product[] = [
   {
     title: 'Compatibility Matrix',
     description:
-      'In Development - Automatically test, if your Application is compatible across a matrix of possible deployment environments',
+      'New - Automatically test if your application is compatible across a matrix of deployment environments',
     value: 'check-circle',
-    href: '/docs/product/agents/',
+    href: '/docs/guides/kubernetes-compatibility-matrix/',
   },
   {
-    title: 'Pre Flight Checks',
+    title: 'Pre-flight Checks',
     description:
-      'In Development - Determine if needed resources are available or execute custom pre and post installation scripts',
+      'New - Determine if needed resources are available or execute custom pre and post installation scripts',
     value: 'clipboard-check',
-    href: '/docs/product/agents/',
+    href: '/docs/guides/preflight-checks/',
   },
   {
     title: 'Customer Portal',
