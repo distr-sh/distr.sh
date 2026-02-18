@@ -111,8 +111,8 @@ const slug = Astro.locals.starlightRoute.entry.slug;
   }
 
   /* Responsive widths */
-  @media (min-width: 72rem) and (max-width: 100rem) {
-    /* < 1600px: 400px sides, hide search and social icons */
+  @media (min-width: 72rem) and (max-width: 87.5rem) {
+    /* < 1400px: 400px sides, hide search and social icons */
     .left-group {
       min-width: 400px;
     }
@@ -127,8 +127,8 @@ const slug = Astro.locals.starlightRoute.entry.slug;
     }
   }
 
-  @media (min-width: 100rem) {
-    /* >= 1600px: 550px sides, show everything */
+  @media (min-width: 87.5rem) {
+    /* >= 1400px: 550px sides, show everything */
     .left-group {
       min-width: 550px;
     }
@@ -186,7 +186,7 @@ const slug = Astro.locals.starlightRoute.entry.slug;
     }
   }
 
-  @media (min-width: 72rem) and (max-width: 100rem) {
+  @media (min-width: 72rem) and (max-width: 87.5rem) {
     .header {
       grid-template-columns:
         minmax(400px, auto)
@@ -195,7 +195,7 @@ const slug = Astro.locals.starlightRoute.entry.slug;
     }
   }
 
-  @media (min-width: 100rem) {
+  @media (min-width: 87.5rem) {
     .header {
       grid-template-columns:
         minmax(550px, auto)
