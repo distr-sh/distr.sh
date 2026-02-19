@@ -324,6 +324,76 @@ The reported metrics are:
 - [`metrics-server`](https://github.com/kubernetes-sigs/metrics-server) needs to be installed in the cluster
 - The agent must be cluster-scoped, since it needs access to the node metrics resources.
 
+### Migrating an Existing Helm Release
+
+The Distr Helm agent only manages releases it knows about. If you already have a Helm release running in your cluster and you want Distr to take over, the agent needs a tracking secret that tells it the release exists and which revision it is on.
+
+<Aside type="caution">
+After migration the Distr agent will manage the release. Do not run `helm upgrade` or `helm rollback` manually — this will cause the agent to stop reconciling. See [Altering the Helm Release](#altering-the-helm-release) for details.
+</Aside>
+
+#### Step 1: Get the Current Revision Number
+
+Find out which revision your release is on:
+
+```bash
+helm history <release-name> -n <namespace> --max 1
+```
+
+Note the **REVISION** number from the output.
+
+#### Step 2: Create the Tracking Secret
+
+Create a secret that tells the Distr agent about the existing release:
+
+```bash
+kubectl create secret generic "sh.distr.agent.v1.<release-name>" \
+  --namespace=<namespace> \
+  --from-literal=release='{"id":"00000000-0000-0000-0000-000000000000","revisionId":"00000000-0000-0000-0000-000000000000","releaseName":"<release-name>","helmRevision":<REVISION>,"logsEnabled":false,"phase":"ready"}'
+```
+
+Then label it so the agent can discover it:
+
+```bash
+kubectl label secret "sh.distr.agent.v1.<release-name>" \
+  --namespace=<namespace> \
+  "agent.distr.sh/deployment=<release-name>"
+```
+
+<Aside type="tip">
+The placeholder UUIDs (`00000000-...`) are fine — the agent matches by `releaseName` and updates the IDs on the next reconciliation.
+</Aside>
+
+#### Step 3: Install the Agent
+
+Apply the agent manifest from your Distr deployment's connect URL:
+
+```bash
+kubectl apply -n <namespace> -f "<distr-connect-url>"
+```
+
+The agent will discover the tracking secret, adopt the release, and perform an upgrade on the next reconciliation cycle.
+
+#### Fixing Revision Skew
+
+If the agent reports `actual helm revision is different from latest deployed by agent`, the revision number in the tracking secret does not match the actual Helm release revision.
+
+You can fix this in two ways:
+
+**Option A: From the Distr UI**
+
+Open the deployment in the vendor portal, click **Update**, and use the reset button to sync the agent's Helm revision to the current release revision.
+
+**Option B: Patch the Secret**
+
+Get the current revision number and patch the secret:
+
+```bash
+kubectl patch secret "sh.distr.agent.v1.<release-name>" \
+  --namespace=<namespace> --type='strategic' \
+  -p '{"stringData":{"release":"{\"id\":\"00000000-0000-0000-0000-000000000000\",\"revisionId\":\"00000000-0000-0000-0000-000000000000\",\"releaseName\":\"<release-name>\",\"helmRevision\":<CURRENT_REVISION>,\"logsEnabled\":false,\"phase\":\"ready\"}"}}'
+```
+
 ### Uninstalling the Kubernetes Agent
 
 Before removing the Kubernetes Agent, it is recommended to undeploy all installed deployments via the UI or API that the agent manages.
