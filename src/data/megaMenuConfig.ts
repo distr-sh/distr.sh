@@ -14,7 +14,7 @@ export interface MegaMenuConfig {
 export const megaMenuConfigs: Record<MegaMenuType, MegaMenuConfig> = {
   products: {
     items: products,
-    columns: 5,
+    columns: 4,
     itemWidth: '140px',
   },
   docs: {
