@@ -14,6 +14,13 @@ export const products: Product[] = [
     href: '/docs/product/agents/',
   },
   {
+    title: 'Customer Portal',
+    description:
+      'Where customers can download Artifacts and manage their Applications',
+    value: 'circle-user',
+    href: '/docs/product/customer-portal/',
+  },
+  {
     title: 'Container Registry',
     description:
       'Distribute Docker Images, Helm Charts, or every OCI compatible artifact like large LLM Models with our high performance OCI registry',
@@ -56,11 +63,18 @@ export const products: Product[] = [
     href: '/docs/guides/preflight-checks/',
   },
   {
-    title: 'Customer Portal',
+    title: 'Vulnerability Scanning',
     description:
-      'Where customers can download Artifacts and manage their Applications',
-    value: 'circle-user',
-    href: '/docs/product/customer-portal/',
+      'New - Scan source dependencies and container images for known vulnerabilities and share reports with customers',
+    value: 'shield-check',
+    href: '/docs/guides/vulnerability-scanning/',
+  },
+  {
+    title: 'Secrets',
+    description:
+      'Securely store and reference sensitive configuration values in deployments using centralized secret management',
+    value: 'lock',
+    href: '/docs/guides/secrets/',
   },
   {
     title: 'Integrations / BYOC',
