@@ -35,6 +35,11 @@ import {links} from '~/data/navigation';
             </>
           ))
         }
+        <option disabled>──────────</option>
+        <option value="https://cal.glasskube.com/team/gk/demo">Book Demo</option
+        >
+        <option value="/onboarding/">Start free trial</option>
+        <option value="https://app.distr.sh">Login</option>
       </select>
       <Icon name="down-caret" class="icon caret" />
     </label>
@@ -49,7 +54,12 @@ import {links} from '~/data/navigation';
       if (select) {
         select.addEventListener('change', e => {
           if (e.currentTarget instanceof HTMLSelectElement) {
-            window.location.pathname = e.currentTarget.value;
+            const value = e.currentTarget.value;
+            if (value.startsWith('http')) {
+              window.location.href = value;
+            } else {
+              window.location.pathname = value;
+            }
           }
         });
       }
