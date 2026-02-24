@@ -4,6 +4,7 @@ import Search from '@astrojs/starlight/components/Search.astro';
 import SiteTitle from './SiteTitle.astro';
 import SocialIcons from './SocialIcons.astro';
 import ThemeSelect from './ThemeSelect.astro';
+import GitHubStarButton from '~/components/common/GitHubStarButton.astro';
 import MegaMenu from '~/components/navigation/MegaMenu.astro';
 import {links} from '~/data/navigation';
 import {megaMenuConfigs} from '~/data/megaMenuConfig';
@@ -18,7 +19,7 @@ const slug = Astro.locals.starlightRoute.entry.slug;
       <Search />
     </div>
   </div>
-  <div class="sl-flex nav-centered">
+  <div class="sl-hidden lg:sl-flex nav-centered">
     <nav class="desktop" aria-label="Main navigation">
       {
         links.map((link) => {
@@ -73,12 +74,36 @@ const slug = Astro.locals.starlightRoute.entry.slug;
       }
     </nav>
   </div>
-  <div class="sl-hidden md:sl-flex right-group">
+  <div class="sl-hidden lg:sl-flex right-group">
+    <div class="github-star-wrapper">
+      <GitHubStarButton repo="distr-sh/distr" />
+    </div>
     <div class="sl-flex social-icons">
       <SocialIcons />
     </div>
-    <LanguageSelect />
-    <ThemeSelect />
+  </div>
+
+  <div class="sl-hidden md:sl-flex cta-buttons">
+    <a
+      href="https://cal.glasskube.com/team/gk/demo"
+      target="_blank"
+      class="no-underline text-sm inline-flex items-center justify-center px-3 py-1.5 font-medium bg-white dark:bg-transparent text-gray-900 dark:text-white hover:text-gray-900 dark:hover:text-white hover:bg-accent-600/10 dark:hover:bg-accent-200/10 border-2 border-accent-600 dark:border-accent-200 rounded-lg transition-colors focus:ring-4 focus:outline-none focus:ring-accent-600/20">
+      Book Demo
+    </a>
+    <a
+      href="/onboarding/"
+      class="text-white hover:text-white no-underline text-sm bg-accent-600 hover:bg-accent-700 border-2 border-accent-600 focus:ring-4 focus:outline-none focus:ring-accent-600/20 font-medium rounded-lg px-3 py-1.5 text-center transition-colors">
+      Start free trial
+    </a>
+    <a
+      href="https://app.distr.sh"
+      target="_blank"
+      class="font-medium accent-current hover:underline">
+      Login
+    </a>
+    <div class="theme-wrapper">
+      <ThemeSelect />
+    </div>
   </div>
 </div>
 
@@ -98,6 +123,7 @@ const slug = Astro.locals.starlightRoute.entry.slug;
     flex: 1;
     justify-content: center;
     align-items: center;
+    padding-left: 9rem;
   }
   .right-group {
     gap: 1rem;
@@ -109,31 +135,32 @@ const slug = Astro.locals.starlightRoute.entry.slug;
     gap: 1rem;
     align-items: center;
   }
+  .cta-buttons {
+    gap: 0.75rem;
+    align-items: center;
+  }
+  .github-star-wrapper {
+    padding-top: 0.5rem;
+  }
 
   /* Responsive widths */
-  @media (min-width: 72rem) and (max-width: 100rem) {
-    /* < 1600px: 400px sides, hide search and social icons */
-    .left-group {
-      min-width: 400px;
-    }
-    .right-group {
-      min-width: 400px;
-    }
+  @media (min-width: 72rem) and (max-width: 79.9375rem) {
+    /* 1152px–1279px: Desktop nav + CTAs, no search/social/stars */
     .search-wrapper {
       display: none;
     }
     .social-icons {
-      display: none !important;
+      display: none;
+    }
+    .github-star-wrapper {
+      display: none;
     }
   }
 
-  @media (min-width: 100rem) {
-    /* >= 1600px: 550px sides, show everything */
-    .left-group {
-      min-width: 550px;
-    }
-    .right-group {
-      min-width: 550px;
+  @media (min-width: 80rem) and (max-width: 95.9375rem) {
+    /* 1280px–1535px: Add search + social icons back, still no stars */
+    .github-star-wrapper {
+      display: none;
     }
   }
 
@@ -147,10 +174,16 @@ const slug = Astro.locals.starlightRoute.entry.slug;
     }
   }
   .release-link::after,
-  .social-icons::after {
+  .social-icons::before,
+  .theme-wrapper::before {
     content: '';
     height: 2rem;
     border-inline-end: 1px solid var(--sl-color-gray-5);
+  }
+  .theme-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
   }
 
   @media (min-width: 50rem) {
@@ -175,32 +208,27 @@ const slug = Astro.locals.starlightRoute.entry.slug;
           2
       );
       display: grid;
-      grid-template-columns:
-        /* 1 (site title): runs up until the main content column’s left edge or the width of the title, whichever is the largest  */
-        auto
-        /* 2 (nav): centered, takes available space */
-        1fr
-        /* 3 (right items): right side controls - matches left width */
-        auto;
+      /* 800px–1151px: left-group | nav (collapsed) | cta-buttons | right-group (hidden) */
+      grid-template-columns: auto 1fr auto auto;
       align-content: center;
     }
   }
 
-  @media (min-width: 72rem) and (max-width: 100rem) {
+  @media (min-width: 72rem) and (max-width: 79.9375rem) {
     .header {
-      grid-template-columns:
-        minmax(400px, auto)
-        1fr
-        minmax(400px, auto);
+      grid-template-columns: auto 1fr auto auto;
     }
   }
 
-  @media (min-width: 100rem) {
+  @media (min-width: 80rem) and (max-width: 95.9375rem) {
     .header {
-      grid-template-columns:
-        minmax(550px, auto)
-        1fr
-        minmax(550px, auto);
+      grid-template-columns: minmax(300px, auto) 1fr auto auto;
+    }
+  }
+
+  @media (min-width: 96rem) {
+    .header {
+      grid-template-columns: minmax(400px, auto) 1fr auto auto;
     }
   }
   .desktop a:hover,
@@ -269,7 +297,7 @@ const slug = Astro.locals.starlightRoute.entry.slug;
     position: relative;
   }
 
-  a {
+  .desktop a {
     color: var(--sl-color-white);
     font-weight: 600;
     text-decoration: none;
