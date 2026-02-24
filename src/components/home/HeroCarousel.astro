@@ -1,7 +1,7 @@
 ---
 import ThemedImage from '../util/ThemedImage.astro';
 import {images} from '~/assets';
-import '../../styles/embla.css';
+import '~/styles/embla.css';
 
 const slides = [
   {
@@ -39,13 +39,11 @@ const slides = [
         slides.map(slide => (
           <div class="embla__slide flex-[0_0_100%] min-w-0">
             <figure class="m-0">
-              <div class="rounded-xl overflow-hidden shadow-[0_20px_20px_rgba(0,0,0,0.3)] bg-[#1a1a1a] border border-white/10">
-                <ThemedImage
-                  lightSrc={slide.lightImage}
-                  darkSrc={slide.darkImage}
-                  alt={slide.alt}
-                />
-              </div>
+              <ThemedImage
+                lightSrc={slide.lightImage}
+                darkSrc={slide.darkImage}
+                alt={slide.alt}
+              />
               <figcaption class="text-center mt-4 text-sm md:text-base opacity-90">
                 {slide.caption}
               </figcaption>
