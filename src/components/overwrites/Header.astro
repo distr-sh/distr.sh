@@ -19,7 +19,7 @@ const slug = Astro.locals.starlightRoute.entry.slug;
       <Search />
     </div>
   </div>
-  <div class="sl-flex nav-centered">
+  <div class="sl-hidden lg:sl-flex nav-centered">
     <nav class="desktop" aria-label="Main navigation">
       {
         links.map((link) => {
@@ -74,6 +74,15 @@ const slug = Astro.locals.starlightRoute.entry.slug;
       }
     </nav>
   </div>
+  <div class="sl-hidden lg:sl-flex right-group">
+    <div class="github-star-wrapper">
+      <GitHubStarButton repo="distr-sh/distr" />
+    </div>
+    <div class="sl-flex social-icons">
+      <SocialIcons />
+    </div>
+  </div>
+
   <div class="sl-hidden md:sl-flex cta-buttons">
     <a
       href="https://cal.glasskube.com/team/gk/demo"
@@ -92,16 +101,9 @@ const slug = Astro.locals.starlightRoute.entry.slug;
       class="font-medium accent-current hover:underline">
       Login
     </a>
-  </div>
-  <div class="sl-hidden lg:sl-flex right-group">
-    <div class="sl-flex social-icons">
-      <SocialIcons />
+    <div class="theme-wrapper">
+      <ThemeSelect />
     </div>
-    <div class="github-star-wrapper">
-      <GitHubStarButton repo="distr-sh/distr" />
-    </div>
-    <LanguageSelect />
-    <ThemeSelect />
   </div>
 </div>
 
@@ -121,6 +123,7 @@ const slug = Astro.locals.starlightRoute.entry.slug;
     flex: 1;
     justify-content: center;
     align-items: center;
+    padding-left: 9rem;
   }
   .right-group {
     gap: 1rem;
@@ -171,10 +174,16 @@ const slug = Astro.locals.starlightRoute.entry.slug;
     }
   }
   .release-link::after,
-  .social-icons::after {
+  .social-icons::before,
+  .theme-wrapper::before {
     content: '';
     height: 2rem;
     border-inline-end: 1px solid var(--sl-color-gray-5);
+  }
+  .theme-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
   }
 
   @media (min-width: 50rem) {
