@@ -1,0 +1,133 @@
+---
+title: License Keys
+description: Create and manage License Keys to issue signed JWT tokens your application can verify to enforce usage limits, seat counts, and feature access.
+slug: docs/guides/license-keys
+sidebar:
+  order: 7
+---
+
+import {Aside} from '@astrojs/starlight/components';
+
+This guide walks you through how to use License Keys to issue cryptographically signed tokens that your application can verify at runtime to enforce usage limits, seat counts, feature flags, or any other constraint you define.
+
+<Aside type="note">
+  License Keys are a Pro feature available in Pro, Enterprise, and Pro Trial
+  plans. Learn more about [License Management](/docs/product/license-management/)
+  and [subscription plans](/docs/product/subscription-management/).
+</Aside>
+
+## What license keys are for
+
+License Keys are different from [Application Entitlements](/docs/guides/application-licenses/) and [Artifact Entitlements](/docs/guides/artifact-licenses/). Entitlements control what a customer can access within Distr. License keys carry arbitrary data — seat counts, plan tier, feature flags — that your *application* reads and enforces independently of Distr.
+
+When you request a token for a license key, Distr generates a signed JWT. Your application verifies it using the public key you generate and distribute. No call back to Distr is needed at verification time, which means license key validation works in air-gapped and offline environments.
+
+## Prerequisites
+
+For self-hosted Distr instances, token generation requires an Ed25519 signing key configured via the `LICENSE_KEY_PRIVATE_KEY` environment variable. Use the helper script in the repo to generate a key pair:
+
+```sh
+hack/generate-license-signing-key.sh
+```
+
+This outputs a private key (set as `LICENSE_KEY_PRIVATE_KEY` in your `.env`) and a public key (distribute this to your application for token verification). The cloud-hosted version of Distr has this configured for you.
+
+## Creating a license key
+
+1. Navigate to **Licenses** in the sidebar
+2. Click the customer you want to create a license key for
+3. Select the **License Keys** tab and click **"Create License Key"**
+4. Fill in the form:
+   - **Name** (required) — must be unique within your organization
+   - **Description** (optional)
+   - **Not Before** — the date from which the token is valid (defaults to today)
+   - **Expires At** — the date the token expires (defaults to one year from today)
+   - **Payload** — a JSON object with your custom claims (see [Payload](#payload) below)
+5. **Save** — the key is created immediately
+
+{/* SCREENSHOT: License Keys create form — show the drawer with name, description, date pickers, and the JSON payload editor */}
+
+<Aside type="note">
+  Payload, Not Before, and Expires At are **locked after creation** and cannot
+  be changed. Only the name and description can be updated later. If you need
+  different claims or dates, create a new key.
+</Aside>
+
+## Payload
+
+The payload is a JSON object containing the custom claims you want to embed in the token. You define what these mean — Distr treats them as opaque data.
+
+Example payloads:
+
+```json
+{"seats": 25, "plan": "pro"}
+```
+
+```json
+{"instances": 3, "modules": ["analytics", "reporting"], "expires_notice_days": 30}
+```
+
+The payload must be a JSON object (not an array or primitive). The following field names are reserved by the JWT spec and cannot be used: `exp`, `nbf`, `iss`, `sub`, `aud`, `iat`.
+
+## Getting the token
+
+Once a license key exists, you can retrieve the signed JWT at any time:
+
+**Vendor:** Open the license key from the customer's detail view and click the **view** (eye) icon. Distr generates the token and displays it — copy it to deliver to your customer.
+
+**Customer:** In the customer portal, navigate to **Licenses** and click the key. The token is available there directly. Customers can copy and use it in their environment.
+
+{/* SCREENSHOT: License key token modal — the view showing the JWT token with a copy button */}
+
+## Verifying tokens in your application
+
+The token is a standard JWT signed with EdDSA (Ed25519). Use any JWT library that supports EdDSA to verify it.
+
+The token contains:
+- `iss` — your Distr host URL
+- `sub` — the license key UUID
+- `aud` — `["license-key"]`
+- `iat` — issued at (when the key was created in Distr)
+- `nbf` — not before
+- `exp` — expiration
+- All fields from your payload as top-level claims
+
+Example verification (Node.js with `jose`):
+
+```js
+import {importSPKI, jwtVerify} from 'jose';
+
+const publicKey = await importSPKI(PUBLIC_KEY_PEM, 'EdDSA');
+
+const {payload} = await jwtVerify(token, publicKey, {
+  audience: 'license-key',
+});
+
+console.log(payload.seats);  // your custom claim
+```
+
+Your application is responsible for deciding what to do when verification fails or the token is expired.
+
+## Editing a license key
+
+You can update the **name** and **description** of an existing license key. Payload, dates, and customer assignment cannot be changed after creation.
+
+To edit: open the license key from the customer's detail view and click the **edit** (pen) icon.
+
+## Deleting a license key
+
+<Aside type="caution">
+  Deleting a license key does **not** revoke tokens that have already been
+  issued. A token remains valid until its expiration date regardless of whether
+  the key still exists in Distr. If you need to invalidate a token before it
+  expires, you must implement a revocation check in your application (e.g., a
+  blocklist checked at verification time).
+</Aside>
+
+To delete: open the license key and click the **delete** (trash) icon, then confirm.
+
+## Customer portal view
+
+Customers see their license keys under **Licenses** in the customer portal sidebar. They can view the token for each key but cannot create, edit, or delete keys.
+
+{/* SCREENSHOT: Customer portal license keys list — showing a customer's view with one or more license keys */}
