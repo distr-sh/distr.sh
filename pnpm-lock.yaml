@@ -72,8 +72,8 @@ importers:
         specifier: ^0.19.2
         version: 0.19.2(@astrojs/starlight@0.37.7(astro@5.18.0(@types/node@25.3.5)(jiti@2.6.1)(lightningcss@1.31.1)(rollup@2.80.0)(terser@5.46.0)(typescript@5.8.3)))(astro@5.18.0(@types/node@25.3.5)(jiti@2.6.1)(lightningcss@1.31.1)(rollup@2.80.0)(terser@5.46.0)(typescript@5.8.3))
       starlight-sidebar-topics:
-        specifier: ^0.6.2
-        version: 0.6.2(@astrojs/starlight@0.37.7(astro@5.18.0(@types/node@25.3.5)(jiti@2.6.1)(lightningcss@1.31.1)(rollup@2.80.0)(terser@5.46.0)(typescript@5.8.3)))
+        specifier: ^0.7.0
+        version: 0.7.1(@astrojs/starlight@0.37.7(astro@5.18.0(@types/node@25.3.5)(jiti@2.6.1)(lightningcss@1.31.1)(rollup@2.80.0)(terser@5.46.0)(typescript@5.8.3)))
       tailwindcss:
         specifier: ^4.2.1
         version: 4.2.1
@@ -3827,11 +3827,11 @@ packages:
       '@astrojs/starlight': '>=0.32.0'
       astro: '>=5.1.5'
 
-  starlight-sidebar-topics@0.6.2:
-    resolution: {integrity: sha512-SNCTUZS/hcVor0ZcaXbaSVU37+V+qtvzNirkvnOg3Mqu/awuGpthkH5+uKpiZqWxLffp6TrOlsv5E5QsxrndNg==}
-    engines: {node: '>=18'}
+  starlight-sidebar-topics@0.7.1:
+    resolution: {integrity: sha512-2PBR05ZUvnKNoJtbL2u6GoE1qmQD0tFcd5+inYEJHJkx3LE2P+vlNslofTGHLtzch2XzyNbHUBQQu35bouA6NQ==}
+    engines: {node: '>=22.12.0'}
     peerDependencies:
-      '@astrojs/starlight': '>=0.32.0'
+      '@astrojs/starlight': '>=0.38.0'
 
   stop-iteration-iterator@1.1.0:
     resolution: {integrity: sha512-eLoXW/DHyl62zxY4SCaIgnRhuMr6ri4juEYARS8E6sCEqzKpOiE521Ucofdx+KnDZl5xmvGYaaKCk5FEOxJCoQ==}
@@ -9013,7 +9013,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  starlight-sidebar-topics@0.6.2(@astrojs/starlight@0.37.7(astro@5.18.0(@types/node@25.3.5)(jiti@2.6.1)(lightningcss@1.31.1)(rollup@2.80.0)(terser@5.46.0)(typescript@5.8.3))):
+  starlight-sidebar-topics@0.7.1(@astrojs/starlight@0.37.7(astro@5.18.0(@types/node@25.3.5)(jiti@2.6.1)(lightningcss@1.31.1)(rollup@2.80.0)(terser@5.46.0)(typescript@5.8.3))):
     dependencies:
       '@astrojs/starlight': 0.37.7(astro@5.18.0(@types/node@25.3.5)(jiti@2.6.1)(lightningcss@1.31.1)(rollup@2.80.0)(terser@5.46.0)(typescript@5.8.3))
       picomatch: 4.0.3
