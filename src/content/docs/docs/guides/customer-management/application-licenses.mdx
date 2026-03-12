@@ -6,7 +6,10 @@ sidebar:
   order: 5
 ---
 
-import {Aside, Code, TabItem, Tabs} from '@astrojs/starlight/components';
+import {Aside} from '@astrojs/starlight/components';
+import ThemedImage from '~/components/util/ThemedImage.astro';
+import entitlementFormDark from '~/assets/docs/guides/entitlements/application-entitlement-form-dark.png';
+import entitlementFormLight from '~/assets/docs/guides/entitlements/application-entitlement-form-light.png';
 
 This guide walks you through how to use Application Entitlements to control which application versions your end-customers can access and deploy through Distr agents.
 
@@ -58,14 +61,14 @@ If you don't see the feature yet, make sure you're on a Pro plan or Pro Trial. O
 
 The customer can now access and deploy the assigned application version/s directly from their [customer portal](/docs/product/customer-portal/).
 
-{/* SCREENSHOT: Application Entitlements create form — show the drawer/panel with name, expiration, application selector, and version picker filled in */}
+<ThemedImage
+  lightSrc={entitlementFormLight}
+  darkSrc={entitlementFormDark}
+  alt="Application Entitlement create form showing name, expiration date, application selector, version picker, and optional registry credentials"
+/>
 
 ## OCI registry authentication
 
 If your images are stored in a private [OCI registry](/glossary/oci-container-artifact-registry/), you'll need to provide access credentials. You can configure these credentials in the lower section of the entitlement configuration panel. Once set, the application versions will be available at the deployment target for as long as the entitlement is valid.
 
 ![OCI-registry-auth](../../../../../assets/docs/guides/OCI-Registry-auth.png)
-
-## Walkthrough video
-
-[![Watch the video](../../../../../assets/docs/guides/license-thumbnail.png)](https://www.youtube.com/watch?v=qh-ewkWxRj4)

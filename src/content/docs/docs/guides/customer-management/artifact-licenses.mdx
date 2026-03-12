@@ -7,6 +7,9 @@ sidebar:
 ---
 
 import {Aside} from '@astrojs/starlight/components';
+import ThemedImage from '~/components/util/ThemedImage.astro';
+import artifactFormDark from '~/assets/docs/guides/entitlements/artifact-entitlement-form-dark.png';
+import artifactFormLight from '~/assets/docs/guides/entitlements/artifact-entitlement-form-light.png';
 
 This guide walks you through how to use Artifact Entitlements to control which artifacts and tags your end-customers can access and pull from your Distr registry.
 
@@ -62,7 +65,11 @@ If you don't see the feature yet, make sure you're on a Pro plan or Pro Trial. O
 
 The customer can now access and pull the assigned artifacts and tags directly from your registry through their [customer portal](/docs/product/customer-portal/).
 
-{/* SCREENSHOT: Artifact Entitlements create form — show the drawer/panel with name, artifact selector, and tag options */}
+<ThemedImage
+  lightSrc={artifactFormLight}
+  darkSrc={artifactFormDark}
+  alt="Artifact Entitlement create form showing name, expiration date, artifact selector, tag options, and owner field"
+/>
 
 ## Managing existing entitlements
 
