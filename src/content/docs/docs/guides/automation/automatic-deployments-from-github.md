@@ -601,7 +601,7 @@ This is a critical sequencing issue. In summary:
 
 Now that you have automatic deployments set up, consider:
 
-- **[Application Entitlements](/docs/guides/application-licenses/)** - Control which customers receive automatic updates
+- **[Application Entitlements](/docs/guides/application-entitlements/)** - Control which customers receive automatic updates
 - **[Application Links](/docs/guides/application-links/)** - Create dynamic links for customers to access their deployments
 - **[Distr SDK](/docs/integrations/sdk/)** - Build custom automation and integrations
 - **[Distr API](/docs/integrations/api/)** - Explore advanced API capabilities

@@ -22,7 +22,7 @@ This guide walks you through how to use License Keys to issue cryptographically 
 
 ## What license keys are for
 
-License Keys are different from [Application Entitlements](/docs/guides/application-licenses/) and [Artifact Entitlements](/docs/guides/artifact-licenses/). Entitlements control what a customer can access within Distr. License keys carry arbitrary data — seat counts, plan tier, feature flags — that your _application_ reads and enforces independently of Distr.
+License Keys are different from [Application Entitlements](/docs/guides/application-entitlements/) and [Artifact Entitlements](/docs/guides/artifact-entitlements/). Entitlements control what a customer can access within Distr. License keys carry arbitrary data — seat counts, plan tier, feature flags — that your _application_ reads and enforces independently of Distr.
 
 When you request a token for a license key, Distr generates a signed JWT. Your application verifies it using the public key you generate and distribute. No call back to Distr is needed at verification time, which means license key validation works in air-gapped and offline environments.
 

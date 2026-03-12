@@ -127,7 +127,7 @@ You can delete individual tags from an artifact through the API and UI. However,
 
 Tag deletion succeeds when all of these conditions are met:
 
-- The tag exists and is not referenced in any [artifact entitlement](/docs/guides/artifact-licenses/)
+- The tag exists and is not referenced in any [artifact entitlement](/docs/guides/artifact-entitlements/)
 - If the underlying manifest digest is referenced in entitlements, other non-SHA tags must exist for that digest
 
 <Aside type="tip">
@@ -183,7 +183,7 @@ Artifacts can be deleted when they are not referenced in any active licenses.
 
 #### Best Practices
 
-- **Check licenses first**: Before deleting artifacts or tags, verify they are not referenced in customer entitlements
+- **Check entitlements first**: Before deleting artifacts or tags, verify they are not referenced in customer entitlements
 - **Use caution with tags**: Deleting tags can affect customer access if not done carefully
 - **Monitor usage**: Review the Downloads section to understand which artifacts and versions are actively used
 - **Keep at least one tag**: The system requires at least one non-SHA tag per artifact to maintain discoverability
