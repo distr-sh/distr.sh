@@ -5,7 +5,7 @@ import sitemap from '@astrojs/sitemap';
 import starlight from '@astrojs/starlight';
 import tailwindcss from '@tailwindcss/vite';
 import icon from 'astro-icon';
-import {defineConfig} from 'astro/config';
+import {defineConfig, fontProviders} from 'astro/config';
 import serviceWorker from 'astrojs-service-worker';
 import rehypeMermaid from 'rehype-mermaid';
 import starlightLinksValidator from 'starlight-links-validator';
@@ -14,6 +14,22 @@ import starlightSidebarTopics from 'starlight-sidebar-topics';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://distr.sh',
+  fonts: [
+    {
+      name: 'Inter',
+      cssVariable: '--font-inter',
+      provider: fontProviders.fontsource(),
+      weights: [300, 400, 600, 700],
+      subsets: ['latin'],
+    },
+    {
+      name: 'Poppins',
+      cssVariable: '--font-poppins',
+      provider: fontProviders.fontsource(),
+      weights: [600],
+      subsets: ['latin'],
+    },
+  ],
 
   integrations: [
     icon({include: {lucide: ['*']}}),
@@ -75,6 +91,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       ],
       components: {
         // Components can be overwritten here
+        Head: './src/components/overwrites/Head.astro',
         Header: './src/components/overwrites/Header.astro',
         PageTitle: './src/components/overwrites/PageTitle.astro',
         ContentPanel: './src/components/overwrites/ContentPanel.astro',
@@ -180,6 +197,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             '/glossary/**',
             '/get-started/',
             '/onboarding/',
+            'mailto:**',
           ],
         }),
       ],
