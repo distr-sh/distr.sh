@@ -32,7 +32,7 @@
     "preact": "^10.28.4",
     "rehype-mermaid": "^3.0.0",
     "sharp": "^0.34.5",
-    "starlight-links-validator": "^0.19.2",
+    "starlight-links-validator": "^0.20.0",
     "starlight-sidebar-topics": "^0.6.2",
     "tailwindcss": "^4.2.1"
   },
