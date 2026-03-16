@@ -41,7 +41,7 @@ You define a JSON payload with whatever your application needs to enforce:
 
 Distr issues a signed JWT. Your customer injects it into their environment — an env var, a Kubernetes secret, a mounted config file. Your application verifies the signature at startup using your public key and reads the claims. No network call. No license server. No dependency on Distr being reachable at runtime.
 
-It works fully offline. It works in air-gapped clusters. The token travels with the deployment.
+It works fully offline. It works in air-gapped clusters. It is cryptographically secure.
 
 Your application reads `seats: 25` and enforces it. Contract expires? Issue a new token with a new expiry. Customer upgrades to a higher tier? New payload, new token. Rotation is on your side — the customer just injects the updated value.
 
