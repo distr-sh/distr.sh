@@ -23,7 +23,7 @@ to distribute Docker images and [Helm Charts](/glossary/helm-chart/), [SBOMs](/g
 It features advanced tag-based access and licensing controls.
 The registry also provides detailed download analytics that let you monitor which versions of your software are being used by each customer.
 
-Use it to publish versioned artifacts, enforce licensing rules, and track consumption across your customer base.
+Use it to publish versioned artifacts, enforce entitlement rules, and track consumption across your customer base.
 
 <Aside type="note">
   The Distr Artifact registry is a private registry, meaning that only
@@ -45,7 +45,7 @@ Use it to publish versioned artifacts, enforce licensing rules, and track consum
 - **Software supply chain security**: Store SBOMs and signatures for image verification
 - **Visibility**: Get insights into which customers are using which artifacts and versions
 - **Open standards**: Built on the OCI specification and compatible with existing tooling (Docker, ORAS, Helm, etc.)
-- **Built-in licensing (beta)**: Bind artifact (versions) to licenses for fine-grained customer access control
+- **Built-in licensing (beta)**: Bind artifact versions to entitlements for fine-grained customer access control
 
 ## Getting started
 
@@ -117,7 +117,7 @@ The main Distr dashboard also provides a global view of which artifacts each end
 
 ## Artifact Deletion
 
-The Distr registry includes sophisticated deletion logic to protect artifacts and tags that are actively referenced in licenses, ensuring customers maintain access to their licensed software.
+The Distr registry includes sophisticated deletion logic to protect artifacts and tags that are actively referenced in entitlements, ensuring customers maintain access to their licensed software.
 
 ### Deleting Artifact Tags
 
@@ -127,8 +127,8 @@ You can delete individual tags from an artifact through the API and UI. However,
 
 Tag deletion succeeds when all of these conditions are met:
 
-- The tag exists and is not referenced in any [artifact license](/docs/guides/artifact-licenses/)
-- If the underlying manifest digest is referenced in licenses, other non-SHA tags must exist for that digest
+- The tag exists and is not referenced in any [artifact entitlement](/docs/guides/artifact-entitlements/)
+- If the underlying manifest digest is referenced in entitlements, other non-SHA tags must exist for that digest
 
 <Aside type="tip">
   The system distinguishes between regular tags (like `v1.0.0`, `latest`) and
@@ -178,12 +178,12 @@ Artifacts can be deleted when they are not referenced in any active licenses.
 <Aside type="caution">
   Deleting an artifact is a cascade operation that automatically removes all
   associated artifact versions, tags, and parts. This action cannot be undone.
-  Ensure the artifact is not referenced in any licenses before deletion.
+  Ensure the artifact is not referenced in any entitlements before deletion.
 </Aside>
 
 #### Best Practices
 
-- **Check licenses first**: Before deleting artifacts or tags, verify they are not referenced in customer licenses
+- **Check entitlements first**: Before deleting artifacts or tags, verify they are not referenced in customer entitlements
 - **Use caution with tags**: Deleting tags can affect customer access if not done carefully
 - **Monitor usage**: Review the Downloads section to understand which artifacts and versions are actively used
 - **Keep at least one tag**: The system requires at least one non-SHA tag per artifact to maintain discoverability
