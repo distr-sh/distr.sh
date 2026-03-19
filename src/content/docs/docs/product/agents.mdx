@@ -500,56 +500,61 @@ Consider configuring healthchecks for your deployment to ensure it is running as
 For Docker deployments add a [healthcheck](https://docs.docker.com/reference/compose-file/services/#healthcheck) to your service definition.
 For Kubernetes deployments use [container probes](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/).
 
-### Troubleshooting: Stale Status
+### Deployment target menu
 
-A **Stale** deployment target means the agent was previously connected but has not reported its health in the last 60 seconds. It does not mean the deployment is broken or that your application has stopped running. The application on the host may still be running normally — Distr has simply lost contact with the agent.
+Each deployment target has a **⋮** (vertical ellipsis) menu in the top-right of its card. The menu contains:
 
-Common causes:
+- **Edit**: rename the deployment target or change its configuration
+- **Update Agent**: apply a pending agent version update (only shown when an update is available)
+- **Notes**: add internal notes visible to your team
+- **Agent Logs**: open the agent log viewer. See [Agent Logs](#agent-logs) below.
+- **Reconnect**: generate a new connection command (only shown when the agent has connected at least once). See [Reconnect](#reconnect) below.
+- **Delete**: remove the deployment target
 
-- The agent container crashed or was stopped on the host
-- The host lost network connectivity to Distr
-- The host was rebooted and the agent did not restart automatically
+### Agent Logs
 
-**Step 1: Check the agent on the host**
+Agent Logs show the raw output from the Distr agent process itself. This is distinct from [Container Logs](#container-logs), which show output from your application containers.
 
-SSH into the deployment host and check whether the agent container is still running:
+To view them, click the **⋮** menu on a deployment target and select **Agent Logs**.
 
-```bash
-docker ps | grep distr-agent
-```
+The log viewer shows a timestamped stream of agent activity: connection events, deployment reconciliation cycles, errors, and status reports. This is the first place to look when a deployment target shows an unexpected status or stops reporting.
 
-If the container is not listed, check whether it exited and why:
+### Reconnect
 
-```bash
-docker ps -a | grep distr-agent
-docker logs distr-agent-1
-```
+Reconnect generates a new connection command for a deployment target. Use it when the agent has lost its connection and cannot recover on its own.
 
-If the container crashed, restart it:
+To reconnect:
 
-```bash
-docker start distr-agent-1
-```
+1. Click the **⋮** menu on the deployment target and select **Reconnect**.
+2. Confirm the prompt. The previous credentials are invalidated immediately.
+3. Copy the new command and run it on the deployment host.
 
-If the container is running but the target is still showing as Stale in Distr, check for network connectivity issues between the host and your Distr instance.
-
-**Step 2: Reconnect the agent (if Step 1 does not resolve it)**
-
-If the agent cannot recover on its own, you can generate fresh credentials and reconnect:
-
-1. In the Vendor Portal, open the deployment target.
-2. Click the **...** menu and select **Reconnect**.
-3. Confirm the warning — the previous credentials will be invalidated immediately.
-4. Copy the new install command and run it on the host to restart the agent with the new credentials.
+Reconnecting does not affect your running deployments. If your application was running before the reconnect, it continues running. The agent only manages the connection back to Distr, not the application lifecycle.
 
 <Aside type="caution">
-  Reconnecting generates a new `targetSecret` and invalidates the old one. The
-  agent on the host will stop connecting with its current credentials and must
-  be reinstalled using the new command. If the agent is vendor-managed, make
-  sure you coordinate with the customer before doing this.
+  Reconnecting invalidates the existing `targetSecret` immediately when you
+  confirm. The agent will lose its ability to authenticate until the new command
+  is run on the host.
 </Aside>
 
-For Kubernetes (Helm) agents, the reconnect command will produce a new `kubectl apply` manifest. Apply it to the target namespace to update the credentials.
+### Troubleshooting: Stale Status
+
+A **Stale** deployment target means the agent was previously connected but has not reported its health in the last 60 seconds. It does not mean the deployment is broken. Your application may still be running normally. Distr has simply lost contact with the agent.
+
+**Step 1: Check the Agent Logs**
+
+Open the **⋮** menu on the deployment target and select **Agent Logs**. Look for the last timestamp in the log to see when the agent stopped reporting, and check for any error messages that indicate why it disconnected.
+
+**Step 2: Reconnect**
+
+If you have access to the deployment host:
+
+1. Click **Reconnect** in the **⋮** menu.
+2. Run the new command on the host to re-establish the connection.
+
+If you do not have direct access to the deployment host, ask the customer to reconnect from the Customer Portal. They will find the same **⋮** menu and **Reconnect** option in their deployment target view.
+
+See [Reconnect](#reconnect) for full details on what happens when you reconnect.
 
 ### Container Logs
 
