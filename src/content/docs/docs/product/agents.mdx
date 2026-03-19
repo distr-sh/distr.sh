@@ -500,6 +500,57 @@ Consider configuring healthchecks for your deployment to ensure it is running as
 For Docker deployments add a [healthcheck](https://docs.docker.com/reference/compose-file/services/#healthcheck) to your service definition.
 For Kubernetes deployments use [container probes](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/).
 
+### Troubleshooting: Stale Status
+
+A **Stale** deployment target means the agent was previously connected but has not reported its health in the last 60 seconds. It does not mean the deployment is broken or that your application has stopped running. The application on the host may still be running normally — Distr has simply lost contact with the agent.
+
+Common causes:
+
+- The agent container crashed or was stopped on the host
+- The host lost network connectivity to Distr
+- The host was rebooted and the agent did not restart automatically
+
+**Step 1: Check the agent on the host**
+
+SSH into the deployment host and check whether the agent container is still running:
+
+```bash
+docker ps | grep distr-agent
+```
+
+If the container is not listed, check whether it exited and why:
+
+```bash
+docker ps -a | grep distr-agent
+docker logs distr-agent-1
+```
+
+If the container crashed, restart it:
+
+```bash
+docker start distr-agent-1
+```
+
+If the container is running but the target is still showing as Stale in Distr, check for network connectivity issues between the host and your Distr instance.
+
+**Step 2: Reconnect the agent (if Step 1 does not resolve it)**
+
+If the agent cannot recover on its own, you can generate fresh credentials and reconnect:
+
+1. In the Vendor Portal, open the deployment target.
+2. Click the **...** menu and select **Reconnect**.
+3. Confirm the warning — the previous credentials will be invalidated immediately.
+4. Copy the new install command and run it on the host to restart the agent with the new credentials.
+
+<Aside type="caution">
+  Reconnecting generates a new `targetSecret` and invalidates the old one. The
+  agent on the host will stop connecting with its current credentials and must
+  be reinstalled using the new command. If the agent is vendor-managed, make
+  sure you coordinate with the customer before doing this.
+</Aside>
+
+For Kubernetes (Helm) agents, the reconnect command will produce a new `kubectl apply` manifest. Apply it to the target namespace to update the credentials.
+
 ### Container Logs
 
 Container logs can be enabled per deployment and will appear alongside agent status logs through the deployment interface.
