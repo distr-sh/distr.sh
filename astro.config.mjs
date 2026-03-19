@@ -224,7 +224,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     '/docs/use-cases/air-gapped/': '/docs/use-cases/air-gapped-deployments/',
     '/docs/product/faqs/': '/docs/faqs/',
     '/docs/privacy-policy/': '/privacy-policy/',
-    '/docs/guides/license-mgmt/': '/docs/guides/application-licenses/',
+    '/docs/guides/license-mgmt/': '/docs/guides/application-entitlements/',
+    '/docs/guides/application-licenses/':
+      '/docs/guides/application-entitlements/',
+    '/docs/guides/artifact-licenses/': '/docs/guides/artifact-entitlements/',
     '/docs/guides/onboarding-a-new-customer/': '/docs/product/rbac/',
     '/docs/guides/onboarding-a-docker-app/': '/docs/guides/application/',
     '/docs/guides/onboarding-a-helm-app/': '/docs/guides/application/',
