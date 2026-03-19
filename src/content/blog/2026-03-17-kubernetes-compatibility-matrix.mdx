@@ -31,7 +31,7 @@ You didn't know what version they were running. They didn't think to tell you.
 
 ## The Kubernetes Version Problem for ISVs
 
-When you're shipping software to [on-prem](/glossary/on-premises-definition/) or customer-controlled environments , you don't control the infrastructure. That's the whole point. The customer runs it.
+When you're shipping software to [on-prem](/glossary/on-premises-definition/) or customer-controlled environments, you don't control the infrastructure. That's the whole point. The customer runs it.
 
 But Kubernetes isn't like Docker, where "use a recent version" is mostly fine advice. Kubernetes has a strict API lifecycle. Beta resources graduate. Deprecated APIs get removed on a schedule. A chart that runs perfectly on 1.30 can fail hard on 1.32 for reasons that have nothing to do with your code. Just a removed API that was already flagged for deprecation two releases ago.
 
@@ -57,7 +57,7 @@ Running the validation is one thing. Getting the results to the right people is 
 
 Most ISVs don't have a good answer for this. The compatibility matrix lives in your CI logs, maybe in an internal wiki if someone remembered to update it. Customers have to ask. You have to dig it out and email it. Sometimes it's out of date by the time you find it.
 
-In Distr, the compatibility report gets attached directly to the application version as a [version resource](/docs/guides/kubernetes-compatibility-matrix/), visible to customers in their portal alongside the version details. They can check compatibility for their specific cluster version before they approve an upgrade. No emails. No back-and-forth.
+In Distr, the compatibility report gets attached directly to the application version as a version resource, visible to customers in their portal alongside the version details. They can check compatibility for their specific cluster version before they approve an upgrade. No emails. No back-and-forth.
 
 The `visibleToCustomers` flag means you can also attach internal notes to the same version: things you want your support team to see but don't need to expose to customers. You control what they see.
 
