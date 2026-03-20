@@ -12,16 +12,14 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "@astrojs/mdx": "^4.3.13",
-    "@astrojs/preact": "^4.1.3",
-    "@astrojs/sitemap": "3.7.0",
-    "@astrojs/starlight": "0.37.7",
-    "@astrojs/starlight-tailwind": "4.0.2",
-    "@fontsource/inter": "^5.2.8",
-    "@fontsource/poppins": "^5.2.7",
-    "@iconify-json/lucide": "^1.2.96",
-    "@tailwindcss/vite": "^4.2.1",
-    "astro": "5.18.0",
+    "@astrojs/mdx": "^5.0.2",
+    "@astrojs/preact": "^5.0.2",
+    "@astrojs/sitemap": "3.7.1",
+    "@astrojs/starlight": "0.38.1",
+    "@astrojs/starlight-tailwind": "5.0.0",
+    "@iconify-json/lucide": "^1.2.98",
+    "@tailwindcss/vite": "^4.2.2",
+    "astro": "6.0.7",
     "astro-icon": "^1.1.5",
     "astrojs-service-worker": "^2.0.0",
     "embla-carousel": "^8.6.0",
@@ -29,17 +27,20 @@
     "github-buttons": "^2.31.1",
     "mermaid": "^11.13.0",
     "playwright": "^1.58.2",
-    "preact": "^10.28.4",
+    "preact": "^10.29.0",
     "rehype-mermaid": "^3.0.0",
     "sharp": "^0.34.5",
-    "starlight-links-validator": "^0.19.2",
-    "starlight-sidebar-topics": "^0.6.2",
-    "tailwindcss": "^4.2.1"
+    "starlight-links-validator": "^0.20.1",
+    "starlight-sidebar-topics": "^0.7.1",
+    "tailwindcss": "^4.2.2"
   },
   "devDependencies": {
-    "baseline-browser-mapping": "^2.10.0",
+    "baseline-browser-mapping": "^2.10.8",
     "prettier": "^3.8.1",
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-organize-imports": "^4.3.0"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

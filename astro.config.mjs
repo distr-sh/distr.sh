@@ -5,7 +5,7 @@ import sitemap from '@astrojs/sitemap';
 import starlight from '@astrojs/starlight';
 import tailwindcss from '@tailwindcss/vite';
 import icon from 'astro-icon';
-import {defineConfig} from 'astro/config';
+import {defineConfig, fontProviders} from 'astro/config';
 import serviceWorker from 'astrojs-service-worker';
 import rehypeMermaid from 'rehype-mermaid';
 import starlightLinksValidator from 'starlight-links-validator';
@@ -14,6 +14,22 @@ import starlightSidebarTopics from 'starlight-sidebar-topics';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://distr.sh',
+  fonts: [
+    {
+      name: 'Inter',
+      cssVariable: '--font-inter',
+      provider: fontProviders.fontsource(),
+      weights: [300, 400, 600, 700],
+      subsets: ['latin'],
+    },
+    {
+      name: 'Poppins',
+      cssVariable: '--font-poppins',
+      provider: fontProviders.fontsource(),
+      weights: [600],
+      subsets: ['latin'],
+    },
+  ],
 
   integrations: [
     icon({include: {lucide: ['*']}}),
@@ -75,11 +91,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       ],
       components: {
         // Components can be overwritten here
+        Head: './src/components/overwrites/Head.astro',
         Header: './src/components/overwrites/Header.astro',
         PageTitle: './src/components/overwrites/PageTitle.astro',
         ContentPanel: './src/components/overwrites/ContentPanel.astro',
         Footer: './src/components/overwrites/Footer.astro',
         SocialIcons: './src/components/overwrites/SocialIcons.astro',
+        ThemeProvider: './src/components/overwrites/ThemeProvider.astro',
         ThemeSelect: './src/components/overwrites/ThemeSelect.astro',
       },
       tableOfContents: {
@@ -180,6 +198,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             '/glossary/**',
             '/get-started/',
             '/onboarding/',
+            'mailto:**',
           ],
         }),
       ],
@@ -206,7 +225,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     '/docs/use-cases/air-gapped/': '/docs/use-cases/air-gapped-deployments/',
     '/docs/product/faqs/': '/docs/faqs/',
     '/docs/privacy-policy/': '/privacy-policy/',
-    '/docs/guides/license-mgmt/': '/docs/guides/application-licenses/',
+    '/docs/guides/license-mgmt/': '/docs/guides/application-entitlements/',
+    '/docs/guides/application-licenses/':
+      '/docs/guides/application-entitlements/',
+    '/docs/guides/artifact-licenses/': '/docs/guides/artifact-entitlements/',
     '/docs/guides/onboarding-a-new-customer/': '/docs/product/rbac/',
     '/docs/guides/onboarding-a-docker-app/': '/docs/guides/application/',
     '/docs/guides/onboarding-a-helm-app/': '/docs/guides/application/',

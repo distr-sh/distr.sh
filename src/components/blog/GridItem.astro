@@ -13,15 +13,13 @@ const {post} = Astro.props;
   class="relative rounded-2xl bg-white dark:bg-gray-900 p-6 shadow-lg ring-1 ring-gray-200 dark:ring-gray-800 hover:ring-2 hover:ring-blue-600 transition-all duration-200 mt-0">
   {
     post.image && (
-      <div class="relative h-48 -mx-6 -mt-6 mb-6">
+      <div class="relative h-48 object-cover -mx-6 -mt-6 mb-6">
         <a href={'/blog/' + post.slug + '/'}>
           <Image
             src={post.image}
-            class="w-full h-full rounded-t-2xl object-cover bg-gray-400 dark:bg-slate-700"
-            width={400}
+            class="w-full h-full rounded-t-2xl bg-gray-400 dark:bg-slate-700"
             alt={post.title}
             aspectRatio="16:9"
-            layout="cover"
             loading="lazy"
             decoding="async"
           />
