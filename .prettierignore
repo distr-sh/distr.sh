@@ -1,3 +1,0 @@
-pnpm-lock.yaml
-# Header.astro contains conditional style blocks that Prettier cannot parse
-src/components/overwrites/Header.astro
