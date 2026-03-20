@@ -6,7 +6,6 @@
 
 @import 'tailwindcss';
 
-
 @theme {
   /*Configure your Tailwind theme that will be used by Starlight.*/
   /*https://starlight.astro.build/guides/css-and-tailwind/#styling-starlight-with-tailwind*/
@@ -18,8 +17,9 @@
   --spacing-200: 50rem;
   --spacing-256: 64rem;
 
-  --font-sans: 'Inter', 'system-ui', 'sans-serif';
-  --font-display: 'Poppins', 'Inter', 'system-ui', 'sans-serif';
+  --font-sans: var(--font-inter), 'system-ui', 'sans-serif';
+  --font-display:
+    var(--font-poppins), var(--font-inter), 'system-ui', 'sans-serif';
   --font-mono: 'monospace';
 
   /* Distr.sh color palette - Accent colors */
